@@ -130,6 +130,7 @@ jobs:
               shell: bash
               run: |
                 # Install easysearch
+                mkdir -p $HOME/easysearch
                 VER=$(curl -m30 -sk "https://release.infinilabs.com/.latest" |sed 's/",/"/;s/"//g;s/://1' |grep -Ev '^[{}]' |grep "easysearch" |awk '{print $NF}')
                 wget -q -nc --show-progress --progress=bar:force:noscroll https://release.infinilabs.com/easysearch/snapshot/easysearch-$VER-linux-amd64.tar.gz
                 tar -xzf "easysearch-$VER-linux-amd64.tar.gz" -C "$HOME/easysearch"
