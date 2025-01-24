@@ -2,6 +2,18 @@ name: Products Integration Test
 
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Package Position'
+        required: true
+        type: choice
+        options:
+          - stable
+          - snapshot
+      version:
+        description: 'Easysearch Version'
+        required: false
+        type: string
 
 jobs:
     intergration-test:
@@ -114,6 +126,20 @@ jobs:
               run: java -version && which java
 
             - name: Install and run easysearch
+              if: github.event.inputs.environment == 'snapshot'
+              shell: bash
+              run: |
+                # Install easysearch
+                VER=$(curl -m30 -sk "https://release.infinilabs.com/.latest" |sed 's/",/"/;s/"//g;s/://1' |grep -Ev '^[{}]' |grep "easysearch" |awk '{print $NF}')
+                wget -q -nc --show-progress --progress=bar:force:noscroll https://release.infinilabs.com/easysearch/snapshot/easysearch-$VER-linux-amd64.tar.gz
+                tar -xzf "easysearch-$VER-linux-amd64.tar.gz" -C "$HOME/easysearch"
+                [ -z "$JAVA_HOME" ] || ln -s "$JAVA_HOME" $HOME/easysearch/jdk
+                cd $HOME/easysearch && bin/initialize.sh -s
+                # Run easysearch
+                bin/easysearch -d
+
+            - name: Install and run easysearch
+              if: github.event.inputs.environment == 'stable'
               shell: bash
               run: |
                 # Install easysearch
