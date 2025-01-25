@@ -43,11 +43,9 @@ jobs:
                 echo BUILD_NUMBER=$(date +%Y%m%d) >> $GITHUB_ENV
                 echo BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S") >> $GITHUB_ENV
                 cat $GITHUB_ENV
-                  
+            
             - name: Checkout current repository
               uses: actions/checkout@v4
-              with:
-                path: framework
 
             - name: Checkout console
               uses: actions/checkout@v4
@@ -55,27 +53,34 @@ jobs:
                 ref: main
                 repository: infinilabs/console
                 path: console
-
+                
             - name: Checkout gateway
               uses: actions/checkout@v4
               with:
                 ref: main
                 repository: infinilabs/gateway
                 path: gateway
-
+            
             - name: Checkout agent
               uses: actions/checkout@v4
               with:
                 ref: main
                 repository: infinilabs/agent
                 path: agent
-
+              
             - name: Checkout loadgen
               uses: actions/checkout@v4
               with:
                 ref: main
                 repository: infinilabs/loadgen
                 path: loadgen
+                  
+            - name: Checkout framework
+              uses: actions/checkout@v4
+              with:
+                ref: main
+                repository: infinilabs/framework
+                path: framework
 
             - name: Checkout framework-vendor
               uses: actions/checkout@v4
