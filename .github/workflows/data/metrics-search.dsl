@@ -51,12 +51,16 @@ GET /instance/$[[agent_id]]/node/_discovery
 # }
 
 GET $[[env.ES_ENDPOINT]]/.infini_instance/_search
-{"query":{"term":{"metadata.category":{"value":"elasticsearch"}}}}
 # assert: {
 #   _ctx.response.status: 200
 # }
 
-GET $[[env.ES_ENDPOINT]]/.infini_metrics/_search
+GET $[[env.ES_ENDPOINT]]/.infini_config/_doc/system_ingest_config_yml
+# assert: {
+#   _ctx.response.status: 200
+# }
+
+GET $[[env.ES_ENDPOINT]]/.infini_metrics/_count
 {"query":{"term":{"metadata.category":{"value":"elasticsearch"}}}}
 # assert: {
 #   _ctx.response.status: 200
@@ -70,7 +74,7 @@ POST $[[env.ES_ENDPOINT]]/.infini_metrics/_count
 # }
 
 POST /elasticsearch/infini_default_system_cluster/_proxy?method=GET&path=%2F.infini_metrics%2F_count
-{"query":{"bool":{"must":[{"term":{"agent.id":{"value":"$[[agent_id]]"}}},{"term":{"category":{"value":"elasticsearch"}}}]}}}
+{"query":{"bool":{"must":[{"term":{"agent.id":{"value":"$[[agent_id]]"}}},{"term":{"metadata.category":{"value":"elasticsearch"}}}]}}}
 # request: {
 #   headers: [
 #     {authorization: "Bearer $[[access_token]]"}
