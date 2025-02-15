@@ -130,7 +130,7 @@ jobs:
             - name: Check java toolchain
               run: java -version && which java
 
-            - name: Install and run easysearch
+            - name: Install and run snapshot easysearch
               if: github.event.inputs.environment == 'snapshot'
               shell: bash
               run: |
@@ -144,7 +144,7 @@ jobs:
                 # Run easysearch
                 bin/easysearch -d
 
-            - name: Install and run easysearch
+            - name: Install and run stable easysearch
               if: github.event.inputs.environment == 'stable'
               shell: bash
               run: |
