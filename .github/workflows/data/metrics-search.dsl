@@ -67,7 +67,7 @@ GET $[[env.ES_ENDPOINT]]/.infini_metrics/_count
 # }
 
 POST $[[env.ES_ENDPOINT]]/.infini_metrics/_count
-{"query":{"bool":{"must":[{"term":{"agent.id":{"value":"$[[agent_id]]"}}},{"term":{"category":{"value":"elasticsearch"}}}]}}}
+{"query":{"bool":{"must":[{"term":{"agent.id":{"value":"$[[agent_id]]"}}},{"term":{"metadata.category":{"value":"elasticsearch"}}}]}}}
 # assert: {
 #   _ctx.response.status: 200,
 #   _ctx.response.count: >=0
