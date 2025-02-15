@@ -24,6 +24,7 @@ jobs:
             NODEJS_VERSION: 16.20.2
             JAVA_DISTRIBUTION: temurin
             JAVA_VERSION: 11
+            EZS_VERSION: ${{ github.event.inputs.version }}
 
         steps:
             - name: Init env
@@ -139,6 +140,9 @@ jobs:
                 # Install easysearch
                 mkdir -p $HOME/easysearch
                 VER=$(curl -m30 -sk "https://release.infinilabs.com/.latest" |sed 's/",/"/;s/"//g;s/://1' |grep -Ev '^[{}]' |grep "easysearch" |awk '{print $NF}')
+                if [[ "$EZS_VERSION" != "$VER" ]] && [[ -n "$EZS_VERSION" ]]; then
+                  VER=$EZS_VERSION
+                fi
                 wget -q -nc --show-progress --progress=bar:force:noscroll https://release.infinilabs.com/easysearch/snapshot/easysearch-$VER-linux-amd64.tar.gz
                 tar -xzf "easysearch-$VER-linux-amd64.tar.gz" -C "$HOME/easysearch"
                 [ -z "$JAVA_HOME" ] || ln -s "$JAVA_HOME" $HOME/easysearch/jdk
@@ -151,7 +155,11 @@ jobs:
               shell: bash
               run: |
                 # Install easysearch
-                curl -sSL http://get.infini.cloud | bash -s -- -p easysearch -d $HOME/easysearch
+                VER=$(curl -m30 -sk "https://release.infinilabs.com/.latest" |sed 's/",/"/;s/"//g;s/://1' |grep -Ev '^[{}]' |grep "easysearch" |awk '{print $NF}')
+                if [[ "$EZS_VERSION" != "$VER" ]] && [[ -n "$EZS_VERSION" ]]; then
+                  VER=$EZS_VERSION
+                fi
+                curl -sSL http://get.infini.cloud | bash -s -- -p easysearch -d $HOME/easysearch -v $VER
                 [ -z "$JAVA_HOME" ] || ln -s "$JAVA_HOME" $HOME/easysearch/jdk
                 cd $HOME/easysearch && bin/initialize.sh -s
                 # Run easysearch
@@ -217,8 +225,8 @@ jobs:
                 export PRODUCT=loadgen
                 cd $WORK/$PRODUCT/bin
 
-                cp -rf $WORK/framework/.github/workflows/data/loadgen_yml $WORK/$PRODUCT/bin/$PRODUCT-api.yml
-                cp -rf $WORK/framework/.github/workflows/data/*.dsl $WORK/$PRODUCT/bin
+                cp -rf $WORK/testing/.github/workflows/data/loadgen_yml $WORK/$PRODUCT/bin/$PRODUCT-api.yml
+                cp -rf $WORK/testing/.github/workflows/data/*.dsl $WORK/$PRODUCT/bin
                 $WORK/$PRODUCT/bin/$PRODUCT -debug -config $WORK/$PRODUCT/bin/$PRODUCT-api.yml -run console-initialize.dsl
 
             - name: Run agent test
