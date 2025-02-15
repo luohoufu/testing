@@ -225,8 +225,8 @@ jobs:
                 export PRODUCT=loadgen
                 cd $WORK/$PRODUCT/bin
 
-                cp -rf $WORK/${GITHUB_REPOSITORY##*/}/.github/workflows/data/loadgen_yml $WORK/$PRODUCT/bin/$PRODUCT-api.yml
-                cp -rf $WORK/${GITHUB_REPOSITORY##*/}/.github/workflows/data/*.dsl $WORK/$PRODUCT/bin
+                cp -rf $GITHUB_WORKSPACE/${GITHUB_REPOSITORY##*/}/.github/workflows/data/loadgen_yml $WORK/$PRODUCT/bin/$PRODUCT-api.yml
+                cp -rf $GITHUB_WORKSPACE/${GITHUB_REPOSITORY##*/}/.github/workflows/data/*.dsl $WORK/$PRODUCT/bin
                 $WORK/$PRODUCT/bin/$PRODUCT -debug -config $WORK/$PRODUCT/bin/$PRODUCT-api.yml -run console-initialize.dsl
 
             - name: Run agent test
