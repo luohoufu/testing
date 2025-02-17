@@ -1,4 +1,4 @@
-name: Products Integration Test
+name: Products Compile Test
 
 on:
   workflow_dispatch:
