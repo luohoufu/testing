@@ -61,7 +61,7 @@ GET $[[env.ES_ENDPOINT]]/.infini_configs/_doc/system_ingest_config_yml
 # }
 
 GET $[[env.ES_ENDPOINT]]/.infini_metrics/_count
-{"query":{"term":{"metadata.category":{"value":"elasticsearch"}}}}
+{"query":{"term":{"metadata.name":{"value":"shard_stats"}}}}
 # assert: {
 #   _ctx.response.status: 200,
 # }
@@ -77,14 +77,20 @@ POST $[[env.ES_ENDPOINT]]/.infini_metrics/_count
 #   _ctx.response.status: 200
 # }
 
+POST $[[env.ES_ENDPOINT]]/.infini_logs/_count
+{"query":{"bool":{"must":[{"term":{"agent.id":{"value":"$[[agent_id]]"}}},{"term":{"metadata.name":{"value":"shard_stats"}}}]}}}
+# assert: {
+#   _ctx.response.status: 200
+# }
+
 POST $[[env.ES_ENDPOINT]]/.infini_metrics/_count
-{"query":{"bool":{"must":[{"term":{"agent.id":{"value":"$[[agent_id]]"}}},{"term":{"metadata.category":{"value":"elasticsearch"}}}]}}}
+{"query":{"bool":{"must":[{"term":{"agent.id":{"value":"$[[agent_id]]"}}},{"term":{"metadata.name":{"value":"shard_stats"}}}]}}}
 # assert: {
 #   _ctx.response.status: 200
 # }
 
 POST /elasticsearch/infini_default_system_cluster/_proxy?method=GET&path=%2F.infini_metrics%2F_count
-{"query":{"bool":{"must":[{"term":{"agent.id":{"value":"$[[agent_id]]"}}},{"term":{"metadata.category":{"value":"elasticsearch"}}}]}}}
+{"query":{"bool":{"must":[{"term":{"agent.id":{"value":"$[[agent_id]]"}}},{"term":{"metadata.name":{"value":"shard_stats"}}}]}}}
 # request: {
 #   headers: [
 #     {authorization: "Bearer $[[access_token]]"}
