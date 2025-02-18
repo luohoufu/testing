@@ -1,5 +1,5 @@
 env:
-  ES_ADDR: "127.0.0.1:9200"
+  ES_HOSTS: "127.0.0.1:9200"
   ES_SCHEMA: "https"
   ES_ENDPOINT: "https://127.0.0.1:9200"
   ES_USERNAME: "admin"

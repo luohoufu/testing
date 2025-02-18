@@ -55,7 +55,7 @@ GET $[[env.ES_ENDPOINT]]/.infini_instance/_search
 #   _ctx.response.status: 200
 # }
 
-GET $[[env.ES_ENDPOINT]]/.infini_config/_doc/system_ingest_config_yml
+GET $[[env.ES_ENDPOINT]]/.infini_configs/_doc/system_ingest_config_yml
 # assert: {
 #   _ctx.response.status: 200
 # }
@@ -82,7 +82,7 @@ POST /elasticsearch/infini_default_system_cluster/_proxy?method=GET&path=%2F.inf
 #   disable_header_names_normalizing: false
 # },
 # assert: {
-#   _ctx.response.status: 200
+#   _ctx.response.status: 200,
 #   _ctx.response.body_json.count: >=0
 # }
 
