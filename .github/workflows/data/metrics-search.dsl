@@ -71,14 +71,14 @@ GET $[[env.ES_ENDPOINT]]/.infini_cluster/_search
 #   _ctx.response.status: 200
 # }
 
-POST $[[env.ES_ENDPOINT]]/.infini_metrics/_count
+POST $[[env.ES_ENDPOINT]]/.infini_metrics/_search
 {"query":{"term":{"metadata.name":{"value":"shard_stats"}}}}
 # assert: {
 #   _ctx.response.status: 200
 # }
 
 POST $[[env.ES_ENDPOINT]]/.infini_logs/_count
-{"query":{"bool":{"must":[{"term":{"agent.id":{"value":"$[[agent_id]]"}}},{"term":{"metadata.name":{"value":"shard_stats"}}}]}}}
+{"query":{"bool":{"must":[{"term":{"agent.id":{"value":"$[[agent_id]]"}}}]}}}
 # assert: {
 #   _ctx.response.status: 200
 # }
