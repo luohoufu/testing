@@ -63,7 +63,7 @@ GET $[[env.ES_ENDPOINT]]/.infini_configs/_doc/system_ingest_config_yml
 GET $[[env.ES_ENDPOINT]]/.infini_metrics/_count
 {"query":{"term":{"metadata.category":{"value":"elasticsearch"}}}}
 # assert: {
-#   _ctx.response.status: 200
+#   _ctx.response.status: 200,
 #   _ctx.response.body_json.count: >=0
 # }
 
