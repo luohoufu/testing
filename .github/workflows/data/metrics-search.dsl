@@ -72,6 +72,12 @@ GET $[[env.ES_ENDPOINT]]/.infini_cluster/_search
 # }
 
 POST $[[env.ES_ENDPOINT]]/.infini_metrics/_count
+{"query":{"term":{"metadata.name":{"value":"shard_stats"}}}}
+# assert: {
+#   _ctx.response.status: 200
+# }
+
+POST $[[env.ES_ENDPOINT]]/.infini_metrics/_count
 {"query":{"bool":{"must":[{"term":{"agent.id":{"value":"$[[agent_id]]"}}},{"term":{"metadata.category":{"value":"elasticsearch"}}}]}}}
 # assert: {
 #   _ctx.response.status: 200
