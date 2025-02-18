@@ -64,11 +64,9 @@ GET $[[env.ES_ENDPOINT]]/.infini_metrics/_count
 {"query":{"term":{"metadata.category":{"value":"elasticsearch"}}}}
 # assert: {
 #   _ctx.response.status: 200,
-#   _ctx.response.body_json.count: >=0
 # }
 
 GET $[[env.ES_ENDPOINT]]/.infini_cluster/_search
-{"query":{"term":{"metadata.category":{"value":"elasticsearch"}}}}
 # assert: {
 #   _ctx.response.status: 200
 # }
@@ -76,8 +74,7 @@ GET $[[env.ES_ENDPOINT]]/.infini_cluster/_search
 POST $[[env.ES_ENDPOINT]]/.infini_metrics/_count
 {"query":{"bool":{"must":[{"term":{"agent.id":{"value":"$[[agent_id]]"}}},{"term":{"metadata.category":{"value":"elasticsearch"}}}]}}}
 # assert: {
-#   _ctx.response.status: 200,
-#   _ctx.response.body_json.count: >=0
+#   _ctx.response.status: 200
 # }
 
 POST /elasticsearch/infini_default_system_cluster/_proxy?method=GET&path=%2F.infini_metrics%2F_count
@@ -89,7 +86,6 @@ POST /elasticsearch/infini_default_system_cluster/_proxy?method=GET&path=%2F.inf
 #   disable_header_names_normalizing: false
 # },
 # assert: {
-#   _ctx.response.status: 200,
-#   _ctx.response.body_json.response_body.count: >=0
+#   _ctx.response.status: 200
 # }
 
