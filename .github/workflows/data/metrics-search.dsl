@@ -89,8 +89,8 @@ POST $[[env.ES_ENDPOINT]]/.infini_metrics/_count
 #   _ctx.response.status: 200
 # }
 
-POST /elasticsearch/infini_default_system_cluster/_proxy?method=GET&path=%2F.infini_metrics%2F_count
-{"query":{"bool":{"must":[{"term":{"agent.id":{"value":"$[[agent_id]]"}}},{"term":{"metadata.name":{"value":"shard_stats"}}}]}}}
+POST /elasticsearch/infini_default_system_cluster/_proxy?method=GET&path=%2F.infini_metrics%2F_search
+{"query":{"bool":{"must":[{"term":{"metadata.name":{"value":"shard_stats"}}}]}}}
 # request: {
 #   headers: [
 #     {authorization: "Bearer $[[access_token]]"}
