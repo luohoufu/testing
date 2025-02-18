@@ -14,6 +14,16 @@ on:
     - cron: '15 16 * * *'
   workflow_dispatch:
     inputs:
+      RUN_COMPILE_TEST:
+        description: 'Run Compile Test?'
+        required: false
+        type: boolean
+        default: false
+      RUN_INSTALL_TEST:
+        description: 'Run Install Test?'
+        required: false
+        type: boolean
+        default: false
       EZS_VERSION:
         description: 'Easysearch Version'
         required: false
@@ -27,6 +37,7 @@ on:
 
 jobs:
     compile-test:
+        if : ${{ inputs.RUN_COMPILE_TEST }}
         runs-on: ubuntu-latest
         steps:
             - name: Init env
@@ -316,6 +327,7 @@ jobs:
 
     install-test:
         runs-on: ubuntu-latest
+        if : ${{ inputs.RUN_INSTALL_TEST }}
         steps:
             - name: Init env
               run: |
