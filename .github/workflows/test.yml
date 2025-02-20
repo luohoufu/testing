@@ -1,0 +1,33 @@
+name: Test Github Actions
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  RUNNER_TOOL_CACHE: ${{ runner.tool_cache }}
+
+on:
+  schedule:
+    - cron: '30 16 * * *'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  job1:
+    name: Job1
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up and check env
+        run: |
+          echo $RUNNER_TOOL_CACHE
+          env | sort
+          touch $RUNNER_TOOL_CACHE/job1.txt
+  job2:
+    name: Job2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up and check env
+        run: |
+          echo $RUNNER_TOOL_CACHE
+          env | sort
+          ls -lrt $RUNNER_TOOL_CACHE/job1.txt          
