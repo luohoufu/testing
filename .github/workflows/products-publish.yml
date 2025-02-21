@@ -4,7 +4,7 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GO_VERSION: ${{ vars.GO_VERSION }}
   NODEJS_VERSION: ${{ vars.NODEJS_VERSION }}
-  GO_CODE_BASE: $HOME/go/src/infini.sh
+  GO_CODE_BASE: ${{ vars.GO_CODE_BASE }}
 
 on:
   push:
