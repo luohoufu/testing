@@ -5,6 +5,7 @@ env:
   GO_VERSION: ${{ vars.GO_VERSION }}
   NODEJS_VERSION: ${{ vars.NODEJS_VERSION }}
   GO_CODE_BASE: ${{ vars.GO_CODE_BASE }}
+  PUBLISH_VERSION: ${{ inputs.PUBLISH_VERSION || vars.PUBLISH_VERSION }}
 
 on:
   push:
