@@ -34,20 +34,7 @@ jobs:
           rm -rvf $HOME/.m2
           mkdir -p $GITHUB_WORKSPACE/.m2 && ln -s $GITHUB_WORKSPACE/.m2 $HOME
           mkdir -p $GITHUB_WORKSPACE/maven && ln -s $GITHUB_WORKSPACE/maven $HOME
-          ls -alrt $HOME
-          
-      - name: Set up git system
-        run: |
-          git config user.name "${{ vars.GIT_USERNAME }}"
-          git config user.email "${{ vars.GIT_EMAIL }}"
-          git config init.defaultBranch main
-          git config push.autoSetupRemote true
-          git config submodule.recurse true
-          git config --add safe.directory /workspace
-
-      - name: Preper oss connect
-        run: |
-          
+          ls -alrt $HOME        
 
       - name: Preper oss upload
         run: |
