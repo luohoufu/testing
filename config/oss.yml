@@ -1,0 +1,5 @@
+endpoint: ${{ secrets.OSS_EP }}
+accesskeyid: ${{ secrets.OSS_AK }}
+accesskeysecret: ${{ secrets.OSS_SK }}
+bucket: ${{ secrets.OSS_BK }}
+proxy: http://127.0.0.1:${{ vars.LOCAL_PORT }}

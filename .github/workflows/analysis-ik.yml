@@ -1,0 +1,138 @@
+name: Analysis IK Publish
+
+env:
+    PNAME: analysis-ik
+    RELEASE_URL: ${{ vars.RELEASE_URL }}
+    JAVA_DISTRIBUTION: ${{ vars.JAVA_DISTRIBUTION}}
+    JAVA_VERSION: ${{ inputs.JAVA_VERSION || vars.JAVA_EXT_VERSION }}
+    MAVEN_VERSION: ${{ vars.MAVEN_VERSION }}
+
+on:
+  schedule:
+    - cron: '30 16 * * *'
+  workflow_dispatch:
+    inputs:
+      JAVA_VERSION:
+        description: 'Java Version (overrides repository variable)'
+        required: false
+        default: '17'
+
+jobs:
+  publish-for-elasticsearch:
+    name: Publish analysis-ik plugins for elasticsearch to oss
+    runs-on: ubuntu-latest
+    env:
+      TNAME: elasticsearch
+    steps:
+      - name: Set up and check env
+        run: |
+          env | sort
+
+      - name: Set build directory
+        run: |
+          rm -rvf $HOME/.m2
+          mkdir -p $GITHUB_WORKSPACE/.m2 && ln -s $GITHUB_WORKSPACE/.m2 $HOME
+          mkdir -p $GITHUB_WORKSPACE/maven && ln -s $GITHUB_WORKSPACE/maven $HOME
+          ls -alrt $HOME
+          
+      - name: Set up git system
+        run: |
+          source $GITHUB_WORKSPACE/scripts/git_init
+
+      - name: Preper oss connect
+        run: |
+          
+
+      - name: Preper oss upload
+        run: |
+          if [ -f $GITHUB_WORKSPACE/.oss.json ] ; then
+            echo "no need init the oss json when file is ready."
+          else
+            cat $GITHUB_WORKSPACE/config/oss.json > $GITHUB_WORKSPACE/.oss.json || true
+          fi
+          if [ -f $GITHUB_WORKSPACE/.oss.yml ] ; then
+            echo "no need init the oss config when file is ready."
+          else
+            cat $GITHUB_WORKSPACE/config/oss.yml > $GITHUB_WORKSPACE/.oss.yml || true
+          fi
+          $GITHUB_WORKSPACE/tools/connect -c $GITHUB_WORKSPACE/.oss.json > /dev/null 2>&1 || true
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with: 
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout analysis-ik code
+        uses: actions/checkout@v4
+        with: 
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: infinilabs/$PNAME
+          ref: master
+          path: ${{ env.PNAME }}
+
+      - name: Set up java toolchain
+        uses: actions/setup-java@v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Set up maven
+        run: |
+          if [ ! -d "$HOME/maven/maven-$MAVEN_VERSION" ]; then
+            cd $HOME/maven
+            wget -q -nc --show-progress --progress=bar:force:noscroll https://dlcdn.apache.org/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.zip
+            unzip -q apache-maven-$MAVEN_VERSION-bin.zip && rm -rf apache-maven-$MAVEN_VERSION-bin.zip
+          fi
+          echo Maven path is $HOME/maven/apache-maven-$MAVEN_VERSION
+
+      - name: Preper build code
+        run: |
+          echo "Build $PNAME start..."
+          echo "PATH=$HOME/maven/apache-maven-$MAVEN_VERSION/bin:$PATH" >> $GITHUB_ENV
+
+      - name: Set build versions
+        run: |
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/elastic/$TNAME/releases | grep -oE 'tag/v[0-9.]+"' | sed 's/tag\/v//; s/\"//g')
+          echo "$LATEST_VERSION" > /tmp/versions
+          cat /tmp/versions
+
+      - name: Build not published versions
+        run: |
+          cd $GITHUB_WORKSPACE/$PNAME
+          echo Check not published version at $PWD with branch $(git branch --show-current)
+          while IFS= read -r ver; do
+            # Check published history
+            URL=$RELEASE_URL/$PNAME/stable/$TNAME-$PNAME-$ver.zip
+            if curl -sI "$URL" | grep "HTTP/1.[01] 200" >/dev/null; then
+              break
+            fi
+            # Build when not publish
+            if [[ "${ver%%.*}" -lt 8 ]]; then
+              git fetch origin "${ver%%.*}.x" && git checkout "${ver%%.*}.x"
+            fi
+            echo "Current build for $TNAME version [ $ver ] with branch $(git rev-parse --abbrev-ref HEAD)"
+            if [[ "${ver%%.*}" -lt 8 ]]; then
+              echo mvn package -DskipTests -D$TNAME.version=$ver
+              mvn package -DskipTests -D$TNAME.version=$ver
+            else
+              echo mvn package -pl $TNAME -am -DskipTests -D$TNAME.version=$ver
+              mvn package -pl $TNAME -am -DskipTests -D$TNAME.version=$ver
+            fi
+          done < "/tmp/versions"
+
+      - name: Upload all verion files
+        run: |
+          target_dirs=$(find $GITHUB_WORKSPACE/$PNAME -maxdepth 3 -name "releases" -print)
+          [[ -z "$target_dirs" ]] && exit 0 || echo "Found target directories: $target_dirs"
+
+          # 遍历所有目标目录
+          while IFS= read -r target_dir; do
+            # 查找当前目录下所有zip文件
+            find "$target_dir" -maxdepth 1 -name "*.zip" -print0 | while IFS= read -r -d $'\0' zip_file; do
+              found_zip_file=true
+              oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -k $PNAME/stable -f "$zip_file"
+              #更新文件缓存
+              sleep 5 && curl -s -o /dev/null -w "%{http_code}\n" -H 'x-reset-cache: true' "$RELEASE_URL/$PNAME/stable/${zip_file##*/}"
+            done
+          done <<< "$target_dirs"
