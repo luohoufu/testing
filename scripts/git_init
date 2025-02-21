@@ -1,6 +1,0 @@
-git config --system user.name "${{ vars.GIT_USERNAME }}"
-git config --system user.email "${{ vars.GIT_EMAIL }}"
-git config --system init.defaultBranch main
-git config --system push.autoSetupRemote true
-git config --system submodule.recurse true
-git config --system --add safe.directory /workspace

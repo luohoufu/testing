@@ -8,6 +8,7 @@ env:
     MAVEN_VERSION: ${{ vars.MAVEN_VERSION }}
 
 on:
+  push:
   schedule:
     - cron: '30 16 * * *'
   workflow_dispatch:
@@ -37,7 +38,12 @@ jobs:
           
       - name: Set up git system
         run: |
-          source $GITHUB_WORKSPACE/scripts/git_init
+          git config --system user.name "${{ vars.GIT_USERNAME }}"
+          git config --system user.email "${{ vars.GIT_EMAIL }}"
+          git config --system init.defaultBranch main
+          git config --system push.autoSetupRemote true
+          git config --system submodule.recurse true
+          git config --system --add safe.directory /workspace
 
       - name: Preper oss connect
         run: |
