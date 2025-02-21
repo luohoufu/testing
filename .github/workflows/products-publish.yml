@@ -51,6 +51,7 @@ jobs:
     steps:
       - name: Set up and check env
         run: |
+          mkdir -p $GO_CODE_BASE && echo Build directory $GO_CODE_BASE
           ls -alrt $HOME
 
       - name: Set up go toolchain
