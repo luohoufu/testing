@@ -37,7 +37,7 @@ on:
 
 jobs:
     compile-test:
-        if : ${{ inputs.RUN_COMPILE_TEST }}
+        if : ${{ inputs.RUN_COMPILE_TEST || true }} 
         runs-on: ubuntu-latest
         steps:
             - name: Init env

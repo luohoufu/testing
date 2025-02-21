@@ -16,15 +16,15 @@ jobs:
     steps:
       - name: Set up and check env
         run: |
-          echo $RUNNER_TOOL_CACHE
+          echo $GITHUB_WORKSPACE
           env | sort
-          touch $RUNNER_TOOL_CACHE/job1.txt
+          touch $GITHUB_WORKSPACE/job1.txt
   job2:
     name: Job2
     runs-on: ubuntu-latest
     steps:
       - name: Set up and check env
         run: |
-          echo $RUNNER_TOOL_CACHE
+          echo $GITHUB_WORKSPACE
           env | sort
-          ls -lrt $RUNNER_TOOL_CACHE/job1.txt          
+          ls -lrt $GITHUB_WORKSPACE
