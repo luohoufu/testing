@@ -6,6 +6,7 @@ env:
     JAVA_DISTRIBUTION: ${{ vars.JAVA_DISTRIBUTION}}
     JAVA_VERSION: ${{ inputs.JAVA_VERSION || vars.JAVA_EXT_VERSION }}
     MAVEN_VERSION: ${{ vars.MAVEN_VERSION }}
+    MAVEN_DOWNLOAD_URL: ${{ vars.MAVEN_DOWNLOAD_URL }}
 
 on:
   push:
@@ -25,16 +26,9 @@ jobs:
     env:
       TNAME: elasticsearch
     steps:
-      - name: Set up and check env
+      - name: Set up and check
         run: |
-          env | sort
-
-      - name: Set build directory
-        run: |
-          rm -rvf $HOME/.m2
-          mkdir -p $GITHUB_WORKSPACE/.m2 && ln -s $GITHUB_WORKSPACE/.m2 $HOME
-          mkdir -p $GITHUB_WORKSPACE/maven && ln -s $GITHUB_WORKSPACE/maven $HOME
-          ls -alrt $HOME        
+          ls -alrt $HOME    
 
       - name: Preper oss upload
         run: |
@@ -72,17 +66,17 @@ jobs:
 
       - name: Set up maven
         run: |
-          if [ ! -d "$HOME/maven/maven-$MAVEN_VERSION" ]; then
-            cd $HOME/maven
-            wget -q -nc --show-progress --progress=bar:force:noscroll https://dlcdn.apache.org/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.zip
+          if [ ! -d "$HOME/maven-$MAVEN_VERSION" ]; then
+            cd $HOME
+            wget -q -nc --show-progress --progress=bar:force:noscroll $MAVEN_DOWNLOAD_URL//$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.zip
             unzip -q apache-maven-$MAVEN_VERSION-bin.zip && rm -rf apache-maven-$MAVEN_VERSION-bin.zip
           fi
-          echo Maven path is $HOME/maven/apache-maven-$MAVEN_VERSION
+          echo Maven path is $HOME/apache-maven-$MAVEN_VERSION
 
       - name: Preper build code
         run: |
           echo "Build $PNAME start..."
-          echo "PATH=$HOME/maven/apache-maven-$MAVEN_VERSION/bin:$PATH" >> $GITHUB_ENV
+          echo "PATH=$HOME/apache-maven-$MAVEN_VERSION/bin:$PATH" >> $GITHUB_ENV
 
       - name: Set build versions
         run: |
