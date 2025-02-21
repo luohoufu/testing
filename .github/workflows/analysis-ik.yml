@@ -38,12 +38,12 @@ jobs:
           
       - name: Set up git system
         run: |
-          git config --system user.name "${{ vars.GIT_USERNAME }}"
-          git config --system user.email "${{ vars.GIT_EMAIL }}"
-          git config --system init.defaultBranch main
-          git config --system push.autoSetupRemote true
-          git config --system submodule.recurse true
-          git config --system --add safe.directory /workspace
+          git config user.name "${{ vars.GIT_USERNAME }}"
+          git config user.email "${{ vars.GIT_EMAIL }}"
+          git config init.defaultBranch main
+          git config push.autoSetupRemote true
+          git config submodule.recurse true
+          git config --add safe.directory /workspace
 
       - name: Preper oss connect
         run: |
