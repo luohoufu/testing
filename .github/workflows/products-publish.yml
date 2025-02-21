@@ -43,7 +43,7 @@ on:
         default: true
 
 jobs:
-  compile-test:
+  publish-agent:
     if : ${{ inputs.AGENT_PUBLISH || true }} 
     runs-on: ubuntu-latest
     env:
@@ -188,7 +188,7 @@ jobs:
             linux/amd64
             linux/arm64            
           build-args: |
-            TARGETARCH=$(echo "${{ target.platform }}" | cut -d/ -f2)
+            TARGET_ARCH=${{ matrix.target_arch }}
           tags: |
             ${{ env.REPO_NAME }}:${{ env.VERSION }}-${{ env.BUILD_NUMBER }}
           push: true
@@ -266,3 +266,13 @@ jobs:
             [ -f $GO_CODE_BASE/$PNAME-$VERSION-$BUILD_NUMBER-$t.zip ] && oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -p $PNAME -f $GO_CODE_BASE/$PNAME-$VERSION-$BUILD_NUMBER-$t.zip
           done
           
+    strategy:
+      matrix:
+        target_arch:
+          - 'amd64'
+          - 'arm64'
+        include:
+          - target_arch: 'amd64'
+            platform: 'linux/amd64'
+          - target_arch: 'arm64'
+            platform: 'linux/arm64'
