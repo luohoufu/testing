@@ -59,7 +59,7 @@ jobs:
         uses: actions/checkout@v4
         with: 
           token: ${{ secrets.GITHUB_TOKEN }}
-          repository: infinilabs/$PNAME
+          repository: infinilabs/${{ env.PNAME }}
           ref: master
           path: ${{ env.PNAME }}
 
@@ -86,7 +86,7 @@ jobs:
 
       - name: Set build versions
         run: |
-          LATEST_VERSION=$(curl -s https://api.github.com/repos/elastic/$TNAME/releases | grep -oE 'tag/v[0-9.]+"' | sed 's/tag\/v//; s/\"//g')
+          LATEST_VERSION=$(curl -s $GITHUB_API_URL/repos/elastic/$TNAME/releases | grep -oE 'tag/v[0-9.]+"' | sed 's/tag\/v//; s/\"//g')
           echo "$LATEST_VERSION" > /tmp/versions
           cat /tmp/versions
 
