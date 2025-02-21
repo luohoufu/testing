@@ -1,0 +1,268 @@
+name: Products Publish
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  GO_VERSION: ${{ vars.GO_VERSION }}
+  NODEJS_VERSION: ${{ vars.NODEJS_VERSION }}
+  GO_CODE_BASE: $HOME/go/src/infini.sh
+
+on:
+  push:
+  schedule:
+    - cron: '15 16 * * *'
+  workflow_dispatch:
+    inputs:
+      PUBLISH_VERSION:
+        description: 'Publish Version'
+        required: false
+        default: "${{ vars.PUBLISH_VERSION }}"
+      PUBLISH_RELEASE:
+        description: 'Publish Release?'
+        required: false
+        type: boolean
+        default: true
+      AGENT_PUBLISH:
+        description: 'Run Agent Publish?'
+        required: false
+        type: boolean
+        default: true
+      CONSOLE_PUBLISH:
+        description: 'Run Console Publish?'
+        required: false
+        type: boolean
+        default: true
+      GATEWAY_PUBLISH:
+        description: 'Run Gateway Publish?'
+        required: false
+        type: boolean
+        default: true
+      LOADGEN_PUBLISH:
+        description: 'Run Loadgen Publish?'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  compile-test:
+    if : ${{ inputs.AGENT_PUBLISH || true }} 
+    runs-on: ubuntu-latest
+    env:
+      PNAME: agent
+    steps:
+      - name: Set up and check env
+        run: |
+          ls -alrt $HOME
+
+      - name: Set up go toolchain
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: false
+          cache: true
+
+      - name: Check go toolchain
+        run: go version
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with: 
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout framework code
+        uses: actions/checkout@v4
+        with: 
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ vars.GIT_REPO }}/framework
+          ref: main
+          path: framework
+
+      - name: Checkout framework vendor code
+        uses: actions/checkout@v4
+        with: 
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ vars.GIT_REPO }}/framework-vendor
+          ref: main
+          path: vendor
+
+      - name: Checkout agent code
+        uses: actions/checkout@v4
+        with: 
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ vars.GIT_REPO }}/${{ env.PNAME }}
+          ref: main
+          path: ${{ env.PNAME }}
+
+      - name: Setup golang caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-golang-${{ vars.GO_VERSION }}-${{ env.PNAME }}
+          restore-keys: |
+            ${{ runner.os }}-golang-${{ vars.GO_VERSION }}-${{ env.PNAME }}
+            
+      - name: Link work folders
+        run: |
+          echo "Build $PNAME start..."
+          for dir in framework vendor $PNAME; do
+            echo "Link folder $GITHUB_WORKSPACE/$dir to $GO_CODE_BASE/$dir"
+            ln -s $GITHUB_WORKSPACE/$dir $GO_CODE_BASE/$dir
+          done
+          
+      - name: Preper build code
+        run: |
+          cd $GO_CODE_BASE/$PNAME
+          echo "Build $PNAME at $PWD"
+          PUBLISH_RELEASE="${{ inputs.PUBLISH_RELEASE || vars.PUBLISH_RELEASE || 'FALSE' }}"
+          if [[ "$(echo "$PUBLISH_RELEASE" | tr '[:upper:]' '[:lower:]')" == "true" ]]; then
+            if [[ "$PUBLISH_VERSION" == *-* ]]; then
+              IFS=- read -r DYNAMIC_VERSION DYNAMIC_BUILD_NUMBER <<< "$PUBLISH_VERSION"
+            else
+              RUN_NUMBER=${{ github.run_number }}
+              OFFSET=${{ vars.OFFSET }}
+              DYNAMIC_BUILD_NUMBER=$((RUN_NUMBER + OFFSET))
+              DYNAMIC_VERSION="$PUBLISH_VERSION"
+            fi
+          else
+            DYNAMIC_BUILD_NUMBER=$(date +%Y%m%d)
+            DYNAMIC_VERSION=$(echo "$PUBLISH_VERSION" | awk -F. -v OFS=. '{ $3 = $3 + 1; print $1, $2, $3 "_NIGHTLY" }')
+          fi
+          echo "Build $PNAME with $DYNAMIC_VERSION-$DYNAMIC_BUILD_NUMBER"
+
+          echo VERSION=$DYNAMIC_VERSION >> $GITHUB_ENV
+          echo BUILD_NUMBER=$DYNAMIC_BUILD_NUMBER >> $GITHUB_ENV
+          echo EOL=${{ vars.EOL }} >> $GITHUB_ENV
+          echo BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S") >> $GITHUB_ENV
+          cat $GITHUB_ENV
+
+      - name: Build linux
+        run: |
+          echo "Build $PNAME with [ VERSION $VERSION | BUILD_NUMBER $BUILD_NUMBER | EOL $EOL ]"
+          cd $GO_CODE_BASE/$PNAME
+          make clean config build-linux-amd64
+
+      - name: Build arm
+        run: |
+          echo "Build $PNAME with [ VERSION $VERSION | BUILD_NUMBER $BUILD_NUMBER | EOL $EOL ]"
+          cd $GO_CODE_BASE/$PNAME
+          make config build-linux-arm64
+
+      - name: Build check
+        run: |
+          # 判断编译是否成功
+          [ -f "$GO_CODE_BASE/$PNAME/bin/$PNAME-linux-amd64" ] || (echo "Build $PAME failed exit now." && exit 1)
+
+      - name: License and notice process
+        run: |
+          # License 与 Notice 处理
+          cp -rf $GO_CODE_BASE/framework/LICENSE $GO_CODE_BASE/$PNAME/bin && cat $GO_CODE_BASE/framework/NOTICE $GO_CODE_BASE/$PNAME/NOTICE > $GO_CODE_BASE/$PNAME/bin/NOTICE
+          ls -lrt $GO_CODE_BASE/$PNAME/bin
+
+      - name: Set up qemu
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up docker buildx
+        uses: docker/setup-buildx-action@v3
+        #with:
+        #  buildkitd-flags: --debug
+
+      - name: Login to dockerhub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Docker build meta
+        run: |
+          echo REPO_NAME=${{ vars.DOCKER_REPO }}/$PNAME >> $GITHUB_ENV
+          cat $GITHUB_ENV
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ github.workspace }}/${{ env.PNAME }}/bin
+          file: ${{ github.workspace }}/products/${{ env.PNAME }}/Dockerfile
+          target: prod
+          platforms: |
+            linux/amd64
+            linux/arm64            
+          build-args: |
+            TARGETARCH=$(echo "${{ target.platform }}" | cut -d/ -f2)
+          tags: |
+            ${{ env.REPO_NAME }}:${{ env.VERSION }}-${{ env.BUILD_NUMBER }}
+          push: true
+
+      - name: Build darwin
+        run: |
+          echo "Build $PNAME with [ VERSION $VERSION | BUILD_NUMBER $BUILD_NUMBER | EOL $EOL ]"
+          cd $GO_CODE_BASE/$PNAME
+          make config build-darwin
+
+      - name: Build win
+        run: |
+          echo "Build $PNAME with [ VERSION $VERSION | BUILD_NUMBER $BUILD_NUMBER | EOL $EOL ]"
+          cd $GO_CODE_BASE/$PNAME
+          make config build-win
+
+      - name: Build loong64
+        run: |
+          echo "Build $PNAME with [ VERSION $VERSION | BUILD_NUMBER $BUILD_NUMBER | EOL $EOL ]"
+          cd $GO_CODE_BASE/$PNAME
+          make config build-linux-loong64
+
+      - name: Check files
+        run: |
+          ls -lrt $GO_CODE_BASE/$PNAME/bin
+
+      - name: Archive files
+        run: |
+          cd $GO_CODE_BASE/$PNAME/bin && mkdir -p config
+          echo "Archive $PNAME with [ VERSION $VERSION | BUILD_NUMBER $BUILD_NUMBER ] at $BUILD_DATE"
+          cp -rf $GO_CODE_BASE/$PNAME/bin/$PNAME-linux-amd64 $RUNNER_TOOL_CACHE/$PNAME
+          # 打包文件
+          for t in 386 amd64 arm64 armv5 armv6 armv7 loong64 mips mips64 mips64le mipsle riscv64 ; do
+            tar zcf $GO_CODE_BASE/$PNAME-$VERSION-$BUILD_NUMBER-linux-$t.tar.gz "$PNAME-linux-$t" $PNAME.yml LICENSE NOTICE config
+          done
+          for t in mac-amd64 mac-arm64 ; do
+            zip -qr $GO_CODE_BASE/$PNAME-$VERSION-$BUILD_NUMBER-$t.zip $PNAME-$t $PNAME.yml LICENSE NOTICE config
+          done
+          for t in windows-amd64 windows-386 ; do
+            zip -qr $GO_CODE_BASE/$PNAME-$VERSION-$BUILD_NUMBER-$t.zip $PNAME-$t.exe $PNAME.yml LICENSE NOTICE config
+          done
+
+
+      - name: Set build directory
+        run: |
+          mkdir -p $GO_CODE_BASE && echo Build directory $GO_CODE_BASE
+          mkdir -p $RUNNER_TOOL_CACHE/$PNAME && echo Distribution $RUNNER_TOOL_CACHE/$PNAME
+          - name: Preper oss upload
+          run: |
+            if [ -f $GITHUB_WORKSPACE/.oss.json ] ; then
+              echo "no need init the oss json when file is ready."
+            else
+              cat $GITHUB_WORKSPACE/config/oss.json > $GITHUB_WORKSPACE/.oss.json || true
+            fi
+            if [ -f $GITHUB_WORKSPACE/.oss.yml ] ; then
+              echo "no need init the oss config when file is ready."
+            else
+              cat $GITHUB_WORKSPACE/config/oss.yml > $GITHUB_WORKSPACE/.oss.yml || true
+            fi
+            $GITHUB_WORKSPACE/tools/connect -c $GITHUB_WORKSPACE/.oss.json > /dev/null 2>&1 || true
+                      
+      - name: Upload files
+        run: | 
+          # 上传文件
+          cd $GO_CODE_BASE
+          echo "Upload $PNAME with $VERSION-$BUILD_NUMBER at $PWD"
+          [ ! -f $GITHUB_WORKSPACE/.oss.yml ] && cp -rf $GITHUB_WORKSPACE/.oss.yml $GITHUB_WORKSPACE
+          if [[ "$(echo "${{ vars.PRE_RELEASE }}" | tr '[:upper:]' '[:lower:]')" == "true" ]]; then
+            grep -wq "pre" $GITHUB_WORKSPACE/.oss.yml || echo "pre: true" >> $GITHUB_WORKSPACE/.oss.yml
+          fi
+          for t in 386 amd64 arm64 armv5 armv6 armv7 loong64 mips mips64 mips64le mipsle riscv64 ; do
+            [ -f $GO_CODE_BASE/$PNAME-$VERSION-$BUILD_NUMBER-linux-$t.tar.gz ] && oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -p $PNAME -f $GO_CODE_BASE/$PNAME-$VERSION-$BUILD_NUMBER-linux-$t.tar.gz
+          done
+          for t in mac-amd64 mac-arm64 windows-amd64 windows-386 ; do
+            [ -f $GO_CODE_BASE/$PNAME-$VERSION-$BUILD_NUMBER-$t.zip ] && oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -p $PNAME -f $GO_CODE_BASE/$PNAME-$VERSION-$BUILD_NUMBER-$t.zip
+          done
+          
