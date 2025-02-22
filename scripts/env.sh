@@ -8,7 +8,4 @@ mkdir -p $WORKBASE
 ln -s $GITHUB_WORKSPACE $WORK
 echo "Build path is $WORK"
 # update Makefile
-cp -rf $GITHUB_WORKSPACE/products/framework/Makefile $GITHUB_WORKSPACE/framework
-# check work path
-ls -alrt $WORK/
-env | sort
+cp -rf $WORK/products/framework/Makefile $WORK/framework
