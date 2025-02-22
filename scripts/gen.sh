@@ -24,5 +24,4 @@ endpoint: $OSS_EP
 accesskeyid: $OSS_AK
 accesskeysecret: $OSS_SK
 bucket: $OSS_BK
-proxy: http://127.0.0.1:$LOCAL_PORT
 EOF
