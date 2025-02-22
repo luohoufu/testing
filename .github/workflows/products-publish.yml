@@ -78,19 +78,9 @@ jobs:
 
       - name: Set up and check env
         run: |
-          export WORKBASE=$HOME/go/src
-          export WORK=$WORKBASE/infini.sh
-
+          source $GITHUB_WORKSPACE/scripts/env.sh
           echo WORKBASE=$WORKBASE >> $GITHUB_ENV
           echo WORK=$WORK >> $GITHUB_ENV
-
-          echo Home path is $HOME
-          mkdir -p $WORKBASE
-          ln -s $GITHUB_WORKSPACE $WORK
-          echo Build path is $WORK
-
-          ls -alrt $WORK/
-          env | sort
 
       - name: Set up go toolchain
         uses: actions/setup-go@v5
