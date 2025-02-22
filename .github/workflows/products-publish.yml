@@ -172,7 +172,7 @@ jobs:
             grep -wq "pre" $GITHUB_WORKSPACE/.oss.yml || echo "pre: true" >> $GITHUB_WORKSPACE/.oss.yml
           fi
           exec connect -c $GITHUB_WORKSPACE/.oss.json >/dev/null 2>&1 &
-          sleep 5 && curl -m3 -vx http://127.0.0.1:$LOCAL_PORT 192.168.3.27:9876
+          for i in $(seq 60); do sleep 1 && printf .; done; echo
                       
       - name: Upload ${{ matrix.product }} with ${{ matrix.target }} files
         run: | 
