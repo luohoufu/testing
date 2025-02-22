@@ -126,8 +126,8 @@ jobs:
 
       - name: Build ${{ matrix.product }} check
         run: |
-          IFS='-' read -r _ p1 p2 <<< "$(echo "${{ matrix.target }}" | sed 's/-/\n/2')"
-          [ -f "$WORK/$PNAME/bin/$PNAME-$p1-$p2${[[ $p1 =~ windows ]] && echo .exe}" ] || { echo "Build ${{ matrix.target }} $p1-$p2 failed" && exit 1; }
+          IFS='-' read -r _ p1 p2 <<< "${{ matrix.target }}"
+          [ -f "$WORK/$PNAME/bin/$PNAME-$p1-$p2${[[ $p1 =~ windows ]] && echo .exe}" ] || { echo "Build ${{ matrix.product }} $p1-$p2 failed" && exit 1; }
 
       - name: ${{ matrix.target }} License and notice process
         run: |

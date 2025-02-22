@@ -15,7 +15,7 @@ RUN ln -s agent-* agent && mkdir -p config
 FROM scratch AS prod
 
 LABEL description="A light-weight but powerful cloud agent."
-LABEL maintainer="Medcl、Hardy@INFINILabs <luohf@infinilabs.com>" architecture="amd64/arm64"
+LABEL maintainer="Medcl、Hardy@INFINILabs <luohf@infinilabs.com>"
 
 # 从构建阶段拷贝文件到最终镜像
 COPY --from=builder / /

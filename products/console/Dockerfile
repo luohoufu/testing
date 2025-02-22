@@ -16,7 +16,7 @@ RUN ln -s console-* console
 FROM scratch AS prod
 
 LABEL description="The easiest way to operate your own search platform."
-LABEL maintainer="Medcl、Hardy@INFINILabs <luohf@infinilabs.com>" architecture="amd64/arm64"
+LABEL maintainer="Medcl、Hardy@INFINILabs <luohf@infinilabs.com>"
 
 # 从构建阶段拷贝文件到最终镜像
 COPY --from=builder / /

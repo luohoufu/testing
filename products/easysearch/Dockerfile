@@ -21,7 +21,7 @@ RUN cd /app/easysearch && ln -s /usr/local/jdk .
 FROM scratch AS prod
 
 LABEL description="INFINI Easysearch, derived from Elasticsearch 7.10 and OpenSearch 2.4."
-LABEL maintainer="Medcl、Hardy@INFINILabs <luohf@infinilabs.com>" architecture="amd64/arm64"
+LABEL maintainer="Medcl、Hardy@INFINILabs <luohf@infinilabs.com>"
 
 # 从构建阶段拷贝文件到最终镜像，权限会丢失
 COPY --from=builder / /

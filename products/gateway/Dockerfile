@@ -15,7 +15,7 @@ RUN ln -s gateway-* gateway
 FROM scratch AS prod
 
 LABEL description="A light-weight, powerful and high-performance search gateway."
-LABEL maintainer="Medcl、Hardy@INFINILabs <luohf@infinilabs.com>" architecture="amd64/arm64"
+LABEL maintainer="Medcl、Hardy@INFINILabs <luohf@infinilabs.com>"
 
 # 从构建阶段拷贝文件到最终镜像
 COPY --from=builder / /

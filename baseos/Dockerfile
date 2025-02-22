@@ -82,7 +82,7 @@ RUN find /etc/systemd/system \
 FROM scratch AS prod
 
 LABEL description="A customer linux os from almalinux with jdk 21."
-LABEL maintainer="Medcl、Hardy@INFINILabs <luohf@infinilabs.com>" architecture="amd64/arm64"
+LABEL maintainer="Medcl、Hardy@INFINILabs <luohf@infinilabs.com>"
 
 # 从构建阶段拷贝文件到最终镜像
 COPY --from=builder / /
