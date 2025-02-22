@@ -163,7 +163,7 @@ jobs:
           if [[ "$p1" == "win" ]] || [[ "$p1" == "darwin" ]]; then
             zip -qr $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.zip $PNAME-$TAG $PNAME.yml LICENSE NOTICE config
           else
-            tar zcf $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.tar.gz $TAG $PNAME.yml LICENSE NOTICE config
+            tar zcf $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.tar.gz $PNAME-$TAG $PNAME.yml LICENSE NOTICE config
           fi
           
       - name: Set ${{ matrix.product }} with ${{ matrix.target }} Upload config
