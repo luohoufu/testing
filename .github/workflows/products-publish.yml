@@ -142,7 +142,7 @@ jobs:
           TAG="$(echo $p1|sed 's/win/windows/;s/darwin/mac/')-$p2"
           [[ "$p1" == "win" ]] && TAG="$TAG.exe"
           ls -lrt $WORK/$PNAME/bin
-          [ -f "$WORK/$PNAME/bin/$PNAME-$TAG" ] || { echo "Build $PNAME with $p1-$p2 failed" && exit 1; }
+          [ -f "$WORK/$PNAME/bin/$PNAME-$TAG" ] || { echo "Build $PNAME failed with not found $PNAME-$TAG" && exit 1; }
 
       - name: Build ${{ matrix.product }} with ${{ matrix.target }} License and notice process
         run: |
