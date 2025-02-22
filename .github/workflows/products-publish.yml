@@ -6,7 +6,6 @@ env:
   PUBLISH_VERSION: ${{ inputs.PUBLISH_VERSION || vars.PUBLISH_VERSION }}
   
 on:
-  push:
   schedule:
     - cron: '15 16 * * *'
   workflow_dispatch:

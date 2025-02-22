@@ -28,3 +28,10 @@ jobs:
           echo $GITHUB_WORKSPACE
           env | sort
           ls -lrt $GITHUB_WORKSPACE
+  job3:
+    name: Job2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test oss curl
+        run: |
+          curl -v -X GET http://oss.infini.cloud          
