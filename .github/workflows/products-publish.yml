@@ -124,7 +124,7 @@ jobs:
       - name: Build ${{ matrix.product }} with ${{ matrix.target }}
         run: cd $WORK/$PNAME && make ${{ matrix.target }}
 
-      - name: Build ${{ matrix.product }} check
+      - name: Build ${{ matrix.product }} with ${{ matrix.target }} check
         run: |
           IFS='-' read -r _ p1 p2 <<< "${{ matrix.target }}"
           TARGET="$WORK/$PNAME/bin/$PNAME-$(echo $p1|sed 's/win/windows/;s/darwin/mac/')-$p2"
@@ -132,65 +132,27 @@ jobs:
           ls -alrt $WORK/$PNAME/bin
           [ -f "$TARGET" ] || { echo "Build $PNAME with $p1-$p2 failed" && exit 1; }
 
-      - name: ${{ matrix.target }} License and notice process
+      - name: Build ${{ matrix.product }} with ${{ matrix.target }} License and notice process
         run: |
           # License 与 Notice 处理
           cp -rf $WORK/framework/LICENSE $WORK/$PNAME/bin && cat $WORK/framework/NOTICE $WORK/$PNAME/NOTICE > $WORK/$PNAME/bin/NOTICE
           ls -lrt $WORK/$PNAME/bin
 
-      - name: Set up qemu
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up docker buildx
-        uses: docker/setup-buildx-action@v3
-        #with:
-        #  buildkitd-flags: --debug
-
-      - name: Login to dockerhub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Docker build meta
-        run: |
-          echo PRODUCT_REPO=${{ vars.DOCKER_REPO }}/$PNAME >> $GITHUB_ENV
-          cat $GITHUB_ENV
-
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          context: ${{ github.workspace }}/${{ matrix.product }}/bin
-          file: ${{ github.workspace }}/products/${{ matrix.product }}/Dockerfile
-          target: prod
-          platforms: |
-            linux/386
-            linux/amd64
-            linux/arm/v6
-            linux/arm/v7
-            linux/arm64/v8
-            linux/riscv64
-          tags: |
-            ${{ env.PRODUCT_REPO }}:${{ env.VERSION }}-${{ env.BUILD_NUMBER }}
-          push: true
-
-      - name: Archive files
+      - name: Archive ${{ matrix.product }} with ${{ matrix.target }} files
         run: |
           cd $WORK/$PNAME/bin && mkdir -p config
-          echo "Archive $PNAME with [ VERSION $VERSION | BUILD_NUMBER $BUILD_NUMBER ] at $BUILD_DATE"
-          cp -rf $WORK/$PNAME/bin/$PNAME-linux-amd64 $RUNNER_TOOL_CACHE/$PNAME
-          # 打包文件
-          for t in 386 amd64 arm64 armv5 armv6 armv7 loong64 mips mips64 mips64le mipsle riscv64 ; do
-            tar zcf $WORK/$PNAME-$VERSION-$BUILD_NUMBER-linux-$t.tar.gz "$PNAME-linux-$t" $PNAME.yml LICENSE NOTICE config
-          done
-          for t in mac-amd64 mac-arm64 ; do
-            zip -qr $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$t.zip $PNAME-$t $PNAME.yml LICENSE NOTICE config
-          done
-          for t in windows-amd64 windows-386 ; do
-            zip -qr $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$t.zip $PNAME-$t.exe $PNAME.yml LICENSE NOTICE config
-          done
+          IFS='-' read -r _ p1 p2 <<< "${{ matrix.target }}"
+          TARGET="$(echo $p1|sed 's/win/windows/;s/darwin/mac/')-$p2"
+          [[ "$p1" == "win" ]] && TARGET="$TARGET.exe"
 
-      - name: Set Upload config
+          echo "Archive $PNAME-$p1-$p2 with [ VERSION $VERSION | BUILD_NUMBER $BUILD_NUMBER ] at $BUILD_DATE"
+          if [[ "$p1" == "win" ]] || [[ "$p1" == "darwin" ]]; then
+            zip -qr $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TARGET.zip $PNAME-$TARGET $PNAME.yml LICENSE NOTICE config
+          else
+            tar zcf $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TARGET.tar.gz $TARGET $PNAME.yml LICENSE NOTICE config
+          fi
+          
+      - name: Set ${{ matrix.product }} with ${{ matrix.target }} Upload config
         run: |
           if [ -f $GITHUB_WORKSPACE/.oss.json ] ; then
               echo "no need init the oss json when file is ready."
@@ -202,20 +164,19 @@ jobs:
           else
             cat $GITHUB_WORKSPACE/config/oss.yml > $GITHUB_WORKSPACE/.oss.yml || true
           fi
-          $GITHUB_WORKSPACE/tools/connect -c $GITHUB_WORKSPACE/.oss.json > /dev/null 2>&1 || true
-                      
-      - name: Upload files
-        run: | 
-          # 上传文件
-          cd $WORK
-          echo "Upload $PNAME with $VERSION-$BUILD_NUMBER at $PWD"
-          [ ! -f $GITHUB_WORKSPACE/.oss.yml ] && cp -rf $GITHUB_WORKSPACE/.oss.yml $GITHUB_WORKSPACE
           if [[ "$(echo "${{ vars.PRE_RELEASE }}" | tr '[:upper:]' '[:lower:]')" == "true" ]]; then
             grep -wq "pre" $GITHUB_WORKSPACE/.oss.yml || echo "pre: true" >> $GITHUB_WORKSPACE/.oss.yml
           fi
-          for t in 386 amd64 arm64 armv5 armv6 armv7 loong64 mips mips64 mips64le mipsle riscv64 ; do
-            [ -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-linux-$t.tar.gz ] && oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -p $PNAME -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-linux-$t.tar.gz
-          done
-          for t in mac-amd64 mac-arm64 windows-amd64 windows-386 ; do
-            [ -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$t.zip ] && oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -p $PNAME -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$t.zip
-          done
+          $GITHUB_WORKSPACE/tools/connect -c $GITHUB_WORKSPACE/.oss.json > /dev/null 2>&1 || true
+                      
+      - name: Upload ${{ matrix.product }} with ${{ matrix.target }} files
+        run: | 
+          cd $WORK
+          IFS='-' read -r _ p1 p2 <<< "${{ matrix.target }}"
+          TARGET="$(echo $p1|sed 's/win/windows/;s/darwin/mac/')-$p2"
+          echo "Upload $PNAME with $VERSION-$BUILD_NUMBER at $PWD"
+          if [[ "$p1" == "win" ]] || [[ "$p1" == "darwin" ]]; then
+           [ -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TARGET.zip ] && oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -p $PNAME -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TARGET.zip
+          else
+            [ -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TARGET.tar.gz ] && oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -p $PNAME -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TARGET.tar.gz
+          fi
