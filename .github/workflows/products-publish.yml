@@ -43,7 +43,7 @@ on:
 
 jobs:
   publish:
-    name: Publish ${{ matrix.product }}
+    name: Publish ${{ matrix.product }} with ${{ matrix.target }}
     if : ${{ inputs.AGENT_PUBLISH || true }} 
     runs-on: ubuntu-latest
     strategy:
@@ -127,7 +127,11 @@ jobs:
       - name: Build ${{ matrix.product }} check
         run: |
           IFS='-' read -r _ p1 p2 <<< "${{ matrix.target }}"
-          [ -f "$WORK/$PNAME/bin/$PNAME-$p1-$p2${[[ $p1 =~ windows ]] && echo .exe}" ] || { echo "Build ${{ matrix.product }} $p1-$p2 failed" && exit 1; }
+          TARGET="$WORK/$PNAME/bin/$PNAME-$p1-$p2"
+          if [[ "$p1" == "windows" ]]; then
+            TARGET="$TARGET.exe"
+          fi
+          [ -f "$TARGET" ] || { echo "Build $PNAME $p1-$p2 failed" && exit 1; }
 
       - name: ${{ matrix.target }} License and notice process
         run: |
