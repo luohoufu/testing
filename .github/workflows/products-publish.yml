@@ -120,7 +120,7 @@ jobs:
           cat $GITHUB_ENV
 
       - name: Build ${{ env.PNAME }} with ${{ matrix.target }}
-        run: make config ${{ matrix.target }}
+        run: cd $WORK/$PNAME && make ${{ matrix.target }}
 
       - name: Build check
         run: |
