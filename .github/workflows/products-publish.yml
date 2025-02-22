@@ -216,13 +216,13 @@ jobs:
       - name: Build ${{ matrix.product }} with ${{ matrix.target }} License and notice process
         run: |
           if [[ "${{ matrix.product }}" == "console" ]]; then
-            mkdir -p $GO_CODE_BASE/$PNAME/bin/config
-            PERMJSON=$GO_CODE_BASE/$PNAME/modules/security/realm/authc/native/permission.json
+            mkdir -p $WORK/$PNAME/bin/config
+            PERMJSON=$WORK/$PNAME/modules/security/realm/authc/native/permission.json
             if [ -e $PERMJSON ]; then
-              cp -rf $PERMJSON $GO_CODE_BASE/$PNAME/bin/config
+              cp -rf $PERMJSON $WORK/$PNAME/bin/config
             fi
-            cp -rf $GO_CODE_BASE/$PNAME/config/*.tpl $GO_CODE_BASE/$PNAME/bin/config
-            [ -d $GO_CODE_BASE/$PNAME/config/setup ] && cp -rf $GO_CODE_BASE/$PNAME/config/setup $GO_CODE_BASE/$PNAME/bin/config
+            cp -rf $WORK/$PNAME/config/*.tpl $WORK/$PNAME/bin/config
+            [ -d $WORK/$PNAME/config/setup ] && cp -rf $WORK/$PNAME/config/setup $WORK/$PNAME/bin/config
           fi
           cp -rf $WORK/framework/LICENSE $WORK/$PNAME/bin && cat $WORK/framework/NOTICE $WORK/$PNAME/NOTICE > $WORK/$PNAME/bin/NOTICE
           ls -lrt $WORK/$PNAME/bin
