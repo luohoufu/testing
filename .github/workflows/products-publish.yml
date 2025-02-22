@@ -42,9 +42,56 @@ on:
         default: true
 
 jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Set matrix
+        id: set-matrix
+        run: |
+          matrix_includes=()
+          targets=(win-amd64 win-386 linux-amd64 linux-386 linux-mips64 linux-mips64le linux-armv6 linux-armv7 linux-arm64 linux-loong64 linux-riscv64 darwin-amd64 darwin-arm64)
+          products=(agent console gateway loadgen)
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            # 手动触发：根据输入参数控制
+            if [[ "${{ inputs.AGENT_PUBLISH }}" == "true" ]]; then
+              for target in "${targets[@]}"; do
+                matrix_includes+=('{"product": "agent", "target": "'"$target"'" }')
+              done
+            fi
+            if [[ "${{ inputs.CONSOLE_PUBLISH }}" == "true" ]]; then
+              for target in "${targets[@]}"; do
+                matrix_includes+=('{"product": "console", "target": "'"$target"'" }')
+              done
+            fi
+            # ... (为其他 product 添加类似的 if 语句) ...
+            if [[ "${{ inputs.GATEWAY_PUBLISH }}" == "true" ]]; then
+              for target in "${targets[@]}"; do
+                matrix_includes+=('{"product": "gateway", "target": "'"$target"'" }')
+              done
+            fi
+
+            if [[ "${{ inputs.LOADGEN_PUBLISH }}" == "true" ]]; then
+              for target in "${targets[@]}"; do
+                matrix_includes+=('{"product": "loadgen", "target": "'"$target"'" }')
+              done
+            fi
+          else
+            # 非手动触发：构建所有 product 和 target
+            for product in "${products[@]}"; do
+              for target in "${targets[@]}"; do
+                matrix_includes+=('{"product": "'"$product"'", "target": "'"$target"'" }')
+              done
+            fi
+          fi
+
+          echo "matrix=[$(IFS=,; echo "${matrix_includes[*]}")]" >> "$GITHUB_OUTPUT"
+
   publish:
+    needs: generate-matrix
     name: Publish ${{ matrix.product }} with ${{ matrix.target }}
-    if : ${{ inputs.AGENT_PUBLISH || true }} 
     runs-on: ubuntu-latest
     env:
         OSS_EP: ${{ secrets.OSS_EP }}
@@ -61,8 +108,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        product: [agent]
-        target: [win-amd64,win-386,linux-amd64,linux-386,linux-mips64,linux-mips64le,linux-armv6,linux-armv7,linux-arm64,linux-loong64,linux-riscv64,darwin-amd64,darwin-arm64]
+        include: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
