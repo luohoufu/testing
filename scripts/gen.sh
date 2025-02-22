@@ -3,7 +3,7 @@
 # for proxy
 cat <<EOF > "$GITHUB_WORKSPACE/.oss.json"
 {
-    "local_port": "$LOCAL_PORT",
+    "local_port": $LOCAL_PORT,
     "local_address": "127.0.0.1",
     "servers": [
         {

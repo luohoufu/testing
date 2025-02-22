@@ -170,8 +170,6 @@ jobs:
           if [[ "$(echo "${{ vars.PRE_RELEASE }}" | tr '[:upper:]' '[:lower:]')" == "true" ]]; then
             grep -wq "pre" $GITHUB_WORKSPACE/.oss.yml || echo "pre: true" >> $GITHUB_WORKSPACE/.oss.yml
           fi
-          cat $GITHUB_WORKSPACE/.oss.json
-          cat $GITHUB_WORKSPACE/.oss.yml
           exec connect -c $GITHUB_WORKSPACE/.oss.json &
                       
       - name: Upload ${{ matrix.product }} with ${{ matrix.target }} files
