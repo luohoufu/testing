@@ -1,14 +1,14 @@
 {
-    "local_port": ${{ secrets.LOCAL_PORT }},
+    "local_port": "$LOCAL_PORT",
     "local_address": "127.0.0.1",
     "servers": [
         {
-            "server": "${{ secrets.CONNECT_SERVER }}",
-            "server_port": ${{ secrets.CONNECT_PORT }},
-            "password": "${{ secrets.CONNECT_KEY }}",
-            "timeout": ${{ vars.CONNECT_TIMEOUT }},
-            "mode": "${{ vars.CONNECT_MODE }}",
-            "method": "${{ secrets.CONNECT_METHOD }}"
+            "server": "$CONNECT_SERVER",
+            "server_port": $CONNECT_PORT,
+            "password": "$CONNECT_KEY",
+            "timeout": $CONNECT_TIMEOUT,
+            "mode": "$CONNECT_MODE",
+            "method": "$CONNECT_METHOD"
         }
     ]
 }
