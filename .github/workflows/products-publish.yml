@@ -141,12 +141,11 @@ jobs:
           IFS='-' read -r p1 p2 <<< "${{ matrix.target }}"
           TAG="$(echo $p1|sed 's/win/windows/;s/darwin/mac/')-$p2"
           [[ "$p1" == "win" ]] && TAG="$TAG.exe"
-          ls -alrt $WORK/$PNAME/bin
+          ls -lrt $WORK/$PNAME/bin
           [ -f "$WORK/$PNAME/bin/$PNAME-$TAG" ] || { echo "Build $PNAME with $p1-$p2 failed" && exit 1; }
 
       - name: Build ${{ matrix.product }} with ${{ matrix.target }} License and notice process
         run: |
-          # License 与 Notice 处理
           cp -rf $WORK/framework/LICENSE $WORK/$PNAME/bin && cat $WORK/framework/NOTICE $WORK/$PNAME/NOTICE > $WORK/$PNAME/bin/NOTICE
           ls -lrt $WORK/$PNAME/bin
 
@@ -155,14 +154,16 @@ jobs:
           cd $WORK/$PNAME/bin && mkdir -p config
           IFS='-' read -r p1 p2 <<< "${{ matrix.target }}"
           TAG="$(echo $p1|sed 's/win/windows/;s/darwin/mac/')-$p2"
-          [[ "$p1" == "win" ]] && TAG="$TAG.exe"
+          EXT=$TAG
+          [[ "$p1" == "win" ]] && EXT="$TAG.exe"
 
           echo "Archive $PNAME-$p1-$p2 with [ VERSION $VERSION | BUILD_NUMBER $BUILD_NUMBER ] at $BUILD_DATE"
           if [[ "$p1" == "win" ]] || [[ "$p1" == "darwin" ]]; then
-            zip -qr $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.zip $PNAME-$TAG $PNAME.yml LICENSE NOTICE config
+            zip -qr $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.zip $PNAME-$EXT $PNAME.yml LICENSE NOTICE config
           else
-            tar zcf $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.tar.gz $PNAME-$TAG $PNAME.yml LICENSE NOTICE config
+            tar zcf $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.tar.gz $PNAME-$EXT $PNAME.yml LICENSE NOTICE config
           fi
+          ls -lrt $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.*
           
       - name: Set ${{ matrix.product }} with ${{ matrix.target }} Upload config
         run: |
@@ -170,7 +171,7 @@ jobs:
           if [[ "$(echo "${{ vars.PRE_RELEASE }}" | tr '[:upper:]' '[:lower:]')" == "true" ]]; then
             grep -wq "pre" $GITHUB_WORKSPACE/.oss.yml || echo "pre: true" >> $GITHUB_WORKSPACE/.oss.yml
           fi
-          exec connect -c $GITHUB_WORKSPACE/.oss.json &
+          exec connect -c $GITHUB_WORKSPACE/.oss.json >/dev/null 2>&1 &
                       
       - name: Upload ${{ matrix.product }} with ${{ matrix.target }} files
         run: | 
