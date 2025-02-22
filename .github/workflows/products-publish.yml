@@ -45,11 +45,10 @@ jobs:
   publish-agent:
     if : ${{ inputs.AGENT_PUBLISH || true }} 
     runs-on: ubuntu-latest
-    env:
-      PNAME: agent
     strategy:
       fail-fast: false
       matrix:
+        product: [agent]
         target: [build-win-amd64,build-win-386,build-linux-amd64,build-linux-386,build-linux-mips64,build-linux-mips64le,build-linux-armv6,build-linux-armv7,build-linux-arm64,build-linux-loong64,build-linux-riscv64,build-darwin-amd64,build-darwin-arm64]
     steps:
       - name: Checkout code
@@ -69,12 +68,12 @@ jobs:
           ref: main
           path: vendor
 
-      - name: Checkout agent code
+      - name: Checkout ${{ matrix.product }} code
         uses: actions/checkout@v4
         with: 
-          repository: ${{ vars.GIT_REPO }}/${{ env.PNAME }}
+          repository: ${{ vars.GIT_REPO }}/${{ matrix.product }}
           ref: main
-          path: ${{ env.PNAME }}
+          path: ${{ matrix.product }}
 
       - name: Set up and check env
         run: |
@@ -119,15 +118,15 @@ jobs:
           echo BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S") >> $GITHUB_ENV
           cat $GITHUB_ENV
 
-      - name: Build ${{ env.PNAME }} with ${{ matrix.target }}
+      - name: Build ${{ matrix.product }} with ${{ matrix.target }}
         run: cd $WORK/$PNAME && make ${{ matrix.target }}
 
-      - name: Build check
+      - name: Build ${{ matrix.product }} check
         run: |
-          # 判断编译是否成功
-          [ -f "$WORK/$PNAME/bin/$PNAME-linux-amd64" ] || (echo "Build $PAME failed exit now." && exit 1)
+          IFS='-' read -r _ p1 p2 <<< "$(echo "${{ matrix.target }}" | sed 's/-/\n/2')"
+          [ -f "$WORK/$PNAME/bin/$PNAME-$p1-$p2${[[ $p1 =~ windows ]] && echo .exe}" ] || { echo "Build ${{ matrix.target }} $p1-$p2 failed" && exit 1; }
 
-      - name: License and notice process
+      - name: ${{ matrix.target }} License and notice process
         run: |
           # License 与 Notice 处理
           cp -rf $WORK/framework/LICENSE $WORK/$PNAME/bin && cat $WORK/framework/NOTICE $WORK/$PNAME/NOTICE > $WORK/$PNAME/bin/NOTICE
@@ -155,8 +154,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: ${{ github.workspace }}/${{ env.PNAME }}/bin
-          file: ${{ github.workspace }}/products/${{ env.PNAME }}/Dockerfile
+          context: ${{ github.workspace }}/${{ matrix.product }}/bin
+          file: ${{ github.workspace }}/products/${{ matrix.product }}/Dockerfile
           target: prod
           platforms: |
             linux/386
