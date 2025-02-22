@@ -127,11 +127,10 @@ jobs:
       - name: Build ${{ matrix.product }} check
         run: |
           IFS='-' read -r _ p1 p2 <<< "${{ matrix.target }}"
-          TARGET="$WORK/$PNAME/bin/$PNAME-$p1-$p2"
-          if [[ "$p1" == "windows" ]]; then
-            TARGET="$TARGET.exe"
-          fi
-          [ -f "$TARGET" ] || { echo "Build $PNAME $p1-$p2 failed" && exit 1; }
+          TARGET="$WORK/$PNAME/bin/$PNAME-$(echo $p1|sed 's/win/windows/;s/darwin/mac/')-$p2"
+          [[ "$p1" == "win" ]] && TARGET="$TARGET.exe"
+          ls -alrt $WORK/$PNAME/bin
+          [ -f "$TARGET" ] || { echo "Build $PNAME with $p1-$p2 failed" && exit 1; }
 
       - name: ${{ matrix.target }} License and notice process
         run: |
