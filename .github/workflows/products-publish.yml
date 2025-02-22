@@ -50,7 +50,7 @@ jobs:
       fail-fast: false
       matrix:
         product: [agent]
-        target: [build-win-amd64,build-win-386,build-linux-amd64,build-linux-386,build-linux-mips64,build-linux-mips64le,build-linux-armv6,build-linux-armv7,build-linux-arm64,build-linux-loong64,build-linux-riscv64,build-darwin-amd64,build-darwin-arm64]
+        target: [win-amd64,win-386,linux-amd64,linux-386,linux-mips64,linux-mips64le,linux-armv6,linux-armv7,linux-arm64,linux-loong64,linux-riscv64,darwin-amd64,darwin-arm64]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -82,6 +82,7 @@ jobs:
           echo WORK=$WORK >> $GITHUB_ENV
           echo WORKBASE=$WORKBASE >> $GITHUB_ENV
           echo PNAME=${{ matrix.product }} >> $GITHUB_ENV
+          echo PATH=$PATH:$GITHUB_WORKSPACE/tools >> $GITHUB_ENV
           cat $GITHUB_ENV
 
       - name: Set up go toolchain
@@ -90,6 +91,7 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           check-latest: false
           cache: true
+          cache-dependency-path: "**/*.sum"
 
       - name: Check go toolchain
         run: go version
@@ -122,15 +124,15 @@ jobs:
           cat $GITHUB_ENV
 
       - name: Build ${{ matrix.product }} with ${{ matrix.target }}
-        run: cd $WORK/$PNAME && make ${{ matrix.target }}
+        run: cd $WORK/$PNAME && make build-${{ matrix.target }}
 
       - name: Build ${{ matrix.product }} with ${{ matrix.target }} check
         run: |
-          IFS='-' read -r _ p1 p2 <<< "${{ matrix.target }}"
-          TARGET="$WORK/$PNAME/bin/$PNAME-$(echo $p1|sed 's/win/windows/;s/darwin/mac/')-$p2"
-          [[ "$p1" == "win" ]] && TARGET="$TARGET.exe"
+          IFS='-' read -r p1 p2 <<< "${{ matrix.target }}"
+          TAG="$WORK/$PNAME/bin/$PNAME-$(echo $p1|sed 's/win/windows/;s/darwin/mac/')-$p2"
+          [[ "$p1" == "win" ]] && TAG="$TAG.exe"
           ls -alrt $WORK/$PNAME/bin
-          [ -f "$TARGET" ] || { echo "Build $PNAME with $p1-$p2 failed" && exit 1; }
+          [ -f "$TAG" ] || { echo "Build $PNAME with $p1-$p2 failed" && exit 1; }
 
       - name: Build ${{ matrix.product }} with ${{ matrix.target }} License and notice process
         run: |
@@ -141,15 +143,15 @@ jobs:
       - name: Archive ${{ matrix.product }} with ${{ matrix.target }} files
         run: |
           cd $WORK/$PNAME/bin && mkdir -p config
-          IFS='-' read -r _ p1 p2 <<< "${{ matrix.target }}"
-          TARGET="$(echo $p1|sed 's/win/windows/;s/darwin/mac/')-$p2"
-          [[ "$p1" == "win" ]] && TARGET="$TARGET.exe"
+          IFS='-' read -r p1 p2 <<< "${{ matrix.target }}"
+          TAG="$(echo $p1|sed 's/win/windows/;s/darwin/mac/')-$p2"
+          [[ "$p1" == "win" ]] && TAG="$TAG.exe"
 
           echo "Archive $PNAME-$p1-$p2 with [ VERSION $VERSION | BUILD_NUMBER $BUILD_NUMBER ] at $BUILD_DATE"
           if [[ "$p1" == "win" ]] || [[ "$p1" == "darwin" ]]; then
-            zip -qr $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TARGET.zip $PNAME-$TARGET $PNAME.yml LICENSE NOTICE config
+            zip -qr $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.zip $PNAME-$TAG $PNAME.yml LICENSE NOTICE config
           else
-            tar zcf $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TARGET.tar.gz $TARGET $PNAME.yml LICENSE NOTICE config
+            tar zcf $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.tar.gz $TAG $PNAME.yml LICENSE NOTICE config
           fi
           
       - name: Set ${{ matrix.product }} with ${{ matrix.target }} Upload config
@@ -167,16 +169,18 @@ jobs:
           if [[ "$(echo "${{ vars.PRE_RELEASE }}" | tr '[:upper:]' '[:lower:]')" == "true" ]]; then
             grep -wq "pre" $GITHUB_WORKSPACE/.oss.yml || echo "pre: true" >> $GITHUB_WORKSPACE/.oss.yml
           fi
-          $GITHUB_WORKSPACE/tools/connect -c $GITHUB_WORKSPACE/.oss.json > /dev/null 2>&1 || true
+          cat $GITHUB_WORKSPACE/.oss.json
+          cat $GITHUB_WORKSPACE/.oss.yml
+          exec connect -c $GITHUB_WORKSPACE/.oss.json &
                       
       - name: Upload ${{ matrix.product }} with ${{ matrix.target }} files
         run: | 
           cd $WORK
-          IFS='-' read -r _ p1 p2 <<< "${{ matrix.target }}"
-          TARGET="$(echo $p1|sed 's/win/windows/;s/darwin/mac/')-$p2"
+          IFS='-' read -r p1 p2 <<< "${{ matrix.target }}"
+          TAG="$(echo $p1|sed 's/win/windows/;s/darwin/mac/')-$p2"
           echo "Upload $PNAME with $VERSION-$BUILD_NUMBER at $PWD"
           if [[ "$p1" == "win" ]] || [[ "$p1" == "darwin" ]]; then
-           [ -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TARGET.zip ] && oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -p $PNAME -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TARGET.zip
+           [ -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.zip ] && oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -p $PNAME -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.zip
           else
-            [ -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TARGET.tar.gz ] && oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -p $PNAME -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TARGET.tar.gz
+            [ -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.tar.gz ] && oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -p $PNAME -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.tar.gz
           fi
