@@ -1,3 +1,7 @@
+#!/bin/bash
+
+# for proxy
+cat <<EOF > "$GITHUB_WORKSPACE/.oss.json"
 {
     "local_port": "$LOCAL_PORT",
     "local_address": "127.0.0.1",
@@ -12,3 +16,13 @@
         }
     ]
 }
+EOF
+
+# for oss
+cat <<EOF > "$GITHUB_WORKSPACE/.oss.yml"
+endpoint: $OSS_EP
+accesskeyid: $OSS_AK
+accesskeysecret: $OSS_SK
+bucket: $OSS_BK
+proxy: http://127.0.0.1:$LOCAL_PORT
+EOF
