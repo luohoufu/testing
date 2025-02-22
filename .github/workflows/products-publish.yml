@@ -55,16 +55,6 @@ jobs:
           mkdir -p $GO_CODE_BASE && echo Build directory $GO_CODE_BASE
           ls -alrt $HOME
 
-      - name: Set up go toolchain
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          check-latest: false
-          cache: true
-
-      - name: Check go toolchain
-        run: go version
-
       - name: Checkout code
         uses: actions/checkout@v4
         with: 
@@ -94,15 +84,15 @@ jobs:
           ref: main
           path: ${{ env.PNAME }}
 
-      - name: Setup golang caches
-        uses: actions/cache@v4
+      - name: Set up go toolchain
+        uses: actions/setup-go@v5
         with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-golang-${{ vars.GO_VERSION }}-${{ env.PNAME }}
-          restore-keys: |
-            ${{ runner.os }}-golang-${{ vars.GO_VERSION }}-${{ env.PNAME }}
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: false
+          cache: true
+
+      - name: Check go toolchain
+        run: go version
             
       - name: Link work folders
         run: |
@@ -113,6 +103,7 @@ jobs:
           done
           
       - name: Preper build code
+        if: ${{ inputs.PUBLISH_VERSION !='' || vars.PUBLISH_VERSION !='' }}
         run: |
           cd $GO_CODE_BASE/$PNAME
           echo "Build $PNAME at $PWD"
