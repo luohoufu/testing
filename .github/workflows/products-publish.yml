@@ -1,10 +1,8 @@
 name: Products Publish
 
 env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GO_VERSION: ${{ vars.GO_VERSION }}
   NODEJS_VERSION: ${{ vars.NODEJS_VERSION }}
-  GO_CODE_BASE: ${{ vars.GO_CODE_BASE }}
   PUBLISH_VERSION: ${{ inputs.PUBLISH_VERSION || vars.PUBLISH_VERSION }}
 
 on:
@@ -49,21 +47,17 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PNAME: agent
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [build-win-amd64,build-win-386,build-linux-amd64,build-linux-386,build-linux-mips64,build-linux-mips64le,build-linux-armv6,build-linux-armv7,build-linux-arm64,build-linux-loong64,build-linux-riscv64,build-darwin-amd64,build-darwin-arm64]
     steps:
-      - name: Set up and check env
-        run: |
-          mkdir -p $GO_CODE_BASE && echo Build directory $GO_CODE_BASE
-          ls -alrt $HOME
-
       - name: Checkout code
         uses: actions/checkout@v4
-        with: 
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout framework code
         uses: actions/checkout@v4
         with: 
-          token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ vars.GIT_REPO }}/framework
           ref: main
           path: framework
@@ -71,7 +65,6 @@ jobs:
       - name: Checkout framework vendor code
         uses: actions/checkout@v4
         with: 
-          token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ vars.GIT_REPO }}/framework-vendor
           ref: main
           path: vendor
@@ -79,10 +72,25 @@ jobs:
       - name: Checkout agent code
         uses: actions/checkout@v4
         with: 
-          token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ vars.GIT_REPO }}/${{ env.PNAME }}
           ref: main
           path: ${{ env.PNAME }}
+
+      - name: Set up and check env
+        run: |
+          export WORKBASE=$HOME/go/src
+          export WORK=$WORKBASE/infini.sh
+
+          echo WORKBASE=$WORKBASE >> $GITHUB_ENV
+          echo WORK=$WORK >> $GITHUB_ENV
+
+          echo Home path is $HOME
+          mkdir -p $WORKBASE
+          ln -s $GITHUB_WORKSPACE $WORK
+          echo Build path is $WORK
+
+          ls -alrt $WORK/
+          env | sort
 
       - name: Set up go toolchain
         uses: actions/setup-go@v5
@@ -93,19 +101,11 @@ jobs:
 
       - name: Check go toolchain
         run: go version
-            
-      - name: Link work folders
-        run: |
-          echo "Build $PNAME start..."
-          for dir in framework vendor $PNAME; do
-            echo "Link folder $GITHUB_WORKSPACE/$dir to $GO_CODE_BASE/$dir"
-            ln -s $GITHUB_WORKSPACE/$dir $GO_CODE_BASE/$dir
-          done
-          
+                      
       - name: Preper build code
         if: ${{ inputs.PUBLISH_VERSION !='' || vars.PUBLISH_VERSION !='' }}
         run: |
-          cd $GO_CODE_BASE/$PNAME
+          cd $WORK/$PNAME
           echo "Build $PNAME at $PWD"
           PUBLISH_RELEASE="${{ inputs.PUBLISH_RELEASE || vars.PUBLISH_RELEASE || 'FALSE' }}"
           if [[ "$(echo "$PUBLISH_RELEASE" | tr '[:upper:]' '[:lower:]')" == "true" ]]; then
@@ -129,28 +129,19 @@ jobs:
           echo BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S") >> $GITHUB_ENV
           cat $GITHUB_ENV
 
-      - name: Build linux
-        run: |
-          echo "Build $PNAME with [ VERSION $VERSION | BUILD_NUMBER $BUILD_NUMBER | EOL $EOL ]"
-          cd $GO_CODE_BASE/$PNAME
-          make clean config build-linux-amd64
-
-      - name: Build arm
-        run: |
-          echo "Build $PNAME with [ VERSION $VERSION | BUILD_NUMBER $BUILD_NUMBER | EOL $EOL ]"
-          cd $GO_CODE_BASE/$PNAME
-          make config build-linux-arm64
+      - name: Build ${{ env.PNAME }} with ${{ matrix.target }}
+        run: make config ${{ matrix.target }}
 
       - name: Build check
         run: |
           # 判断编译是否成功
-          [ -f "$GO_CODE_BASE/$PNAME/bin/$PNAME-linux-amd64" ] || (echo "Build $PAME failed exit now." && exit 1)
+          [ -f "$WORK/$PNAME/bin/$PNAME-linux-amd64" ] || (echo "Build $PAME failed exit now." && exit 1)
 
       - name: License and notice process
         run: |
           # License 与 Notice 处理
-          cp -rf $GO_CODE_BASE/framework/LICENSE $GO_CODE_BASE/$PNAME/bin && cat $GO_CODE_BASE/framework/NOTICE $GO_CODE_BASE/$PNAME/NOTICE > $GO_CODE_BASE/$PNAME/bin/NOTICE
-          ls -lrt $GO_CODE_BASE/$PNAME/bin
+          cp -rf $WORK/framework/LICENSE $WORK/$PNAME/bin && cat $WORK/framework/NOTICE $WORK/$PNAME/NOTICE > $WORK/$PNAME/bin/NOTICE
+          ls -lrt $WORK/$PNAME/bin
 
       - name: Set up qemu
         uses: docker/setup-qemu-action@v3
@@ -178,94 +169,61 @@ jobs:
           file: ${{ github.workspace }}/products/${{ env.PNAME }}/Dockerfile
           target: prod
           platforms: |
+            linux/386
             linux/amd64
-            linux/arm64            
-          build-args: |
-            TARGET_ARCH=${{ matrix.target_arch }}
+            linux/mips64
+            linux/mips64le
+            linux/loong64
+            linux/arm/v6
+            linux/arm/v7
+            linux/arm64
+            linux/riscv64
           tags: |
             ${{ env.REPO_NAME }}:${{ env.VERSION }}-${{ env.BUILD_NUMBER }}
           push: true
 
-      - name: Build darwin
-        run: |
-          echo "Build $PNAME with [ VERSION $VERSION | BUILD_NUMBER $BUILD_NUMBER | EOL $EOL ]"
-          cd $GO_CODE_BASE/$PNAME
-          make config build-darwin
-
-      - name: Build win
-        run: |
-          echo "Build $PNAME with [ VERSION $VERSION | BUILD_NUMBER $BUILD_NUMBER | EOL $EOL ]"
-          cd $GO_CODE_BASE/$PNAME
-          make config build-win
-
-      - name: Build loong64
-        run: |
-          echo "Build $PNAME with [ VERSION $VERSION | BUILD_NUMBER $BUILD_NUMBER | EOL $EOL ]"
-          cd $GO_CODE_BASE/$PNAME
-          make config build-linux-loong64
-
-      - name: Check files
-        run: |
-          ls -lrt $GO_CODE_BASE/$PNAME/bin
-
       - name: Archive files
         run: |
-          cd $GO_CODE_BASE/$PNAME/bin && mkdir -p config
+          cd $WORK/$PNAME/bin && mkdir -p config
           echo "Archive $PNAME with [ VERSION $VERSION | BUILD_NUMBER $BUILD_NUMBER ] at $BUILD_DATE"
-          cp -rf $GO_CODE_BASE/$PNAME/bin/$PNAME-linux-amd64 $RUNNER_TOOL_CACHE/$PNAME
+          cp -rf $WORK/$PNAME/bin/$PNAME-linux-amd64 $RUNNER_TOOL_CACHE/$PNAME
           # 打包文件
           for t in 386 amd64 arm64 armv5 armv6 armv7 loong64 mips mips64 mips64le mipsle riscv64 ; do
-            tar zcf $GO_CODE_BASE/$PNAME-$VERSION-$BUILD_NUMBER-linux-$t.tar.gz "$PNAME-linux-$t" $PNAME.yml LICENSE NOTICE config
+            tar zcf $WORK/$PNAME-$VERSION-$BUILD_NUMBER-linux-$t.tar.gz "$PNAME-linux-$t" $PNAME.yml LICENSE NOTICE config
           done
           for t in mac-amd64 mac-arm64 ; do
-            zip -qr $GO_CODE_BASE/$PNAME-$VERSION-$BUILD_NUMBER-$t.zip $PNAME-$t $PNAME.yml LICENSE NOTICE config
+            zip -qr $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$t.zip $PNAME-$t $PNAME.yml LICENSE NOTICE config
           done
           for t in windows-amd64 windows-386 ; do
-            zip -qr $GO_CODE_BASE/$PNAME-$VERSION-$BUILD_NUMBER-$t.zip $PNAME-$t.exe $PNAME.yml LICENSE NOTICE config
+            zip -qr $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$t.zip $PNAME-$t.exe $PNAME.yml LICENSE NOTICE config
           done
 
-
-      - name: Set build directory
+      - name: Set Upload config
         run: |
-          mkdir -p $GO_CODE_BASE && echo Build directory $GO_CODE_BASE
-          mkdir -p $RUNNER_TOOL_CACHE/$PNAME && echo Distribution $RUNNER_TOOL_CACHE/$PNAME
-          - name: Preper oss upload
-          run: |
-            if [ -f $GITHUB_WORKSPACE/.oss.json ] ; then
+          if [ -f $GITHUB_WORKSPACE/.oss.json ] ; then
               echo "no need init the oss json when file is ready."
-            else
-              cat $GITHUB_WORKSPACE/config/oss.json > $GITHUB_WORKSPACE/.oss.json || true
-            fi
-            if [ -f $GITHUB_WORKSPACE/.oss.yml ] ; then
-              echo "no need init the oss config when file is ready."
-            else
-              cat $GITHUB_WORKSPACE/config/oss.yml > $GITHUB_WORKSPACE/.oss.yml || true
-            fi
-            $GITHUB_WORKSPACE/tools/connect -c $GITHUB_WORKSPACE/.oss.json > /dev/null 2>&1 || true
+          else
+            cat $GITHUB_WORKSPACE/config/oss.json > $GITHUB_WORKSPACE/.oss.json || true
+          fi
+          if [ -f $GITHUB_WORKSPACE/.oss.yml ] ; then
+            echo "no need init the oss config when file is ready."
+          else
+            cat $GITHUB_WORKSPACE/config/oss.yml > $GITHUB_WORKSPACE/.oss.yml || true
+          fi
+          $GITHUB_WORKSPACE/tools/connect -c $GITHUB_WORKSPACE/.oss.json > /dev/null 2>&1 || true
                       
       - name: Upload files
         run: | 
           # 上传文件
-          cd $GO_CODE_BASE
+          cd $WORK
           echo "Upload $PNAME with $VERSION-$BUILD_NUMBER at $PWD"
           [ ! -f $GITHUB_WORKSPACE/.oss.yml ] && cp -rf $GITHUB_WORKSPACE/.oss.yml $GITHUB_WORKSPACE
           if [[ "$(echo "${{ vars.PRE_RELEASE }}" | tr '[:upper:]' '[:lower:]')" == "true" ]]; then
             grep -wq "pre" $GITHUB_WORKSPACE/.oss.yml || echo "pre: true" >> $GITHUB_WORKSPACE/.oss.yml
           fi
           for t in 386 amd64 arm64 armv5 armv6 armv7 loong64 mips mips64 mips64le mipsle riscv64 ; do
-            [ -f $GO_CODE_BASE/$PNAME-$VERSION-$BUILD_NUMBER-linux-$t.tar.gz ] && oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -p $PNAME -f $GO_CODE_BASE/$PNAME-$VERSION-$BUILD_NUMBER-linux-$t.tar.gz
+            [ -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-linux-$t.tar.gz ] && oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -p $PNAME -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-linux-$t.tar.gz
           done
           for t in mac-amd64 mac-arm64 windows-amd64 windows-386 ; do
-            [ -f $GO_CODE_BASE/$PNAME-$VERSION-$BUILD_NUMBER-$t.zip ] && oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -p $PNAME -f $GO_CODE_BASE/$PNAME-$VERSION-$BUILD_NUMBER-$t.zip
+            [ -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$t.zip ] && oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -p $PNAME -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$t.zip
           done
-          
-    strategy:
-      matrix:
-        target_arch:
-          - 'amd64'
-          - 'arm64'
-        include:
-          - target_arch: 'amd64'
-            platform: 'linux/amd64'
-          - target_arch: 'arm64'
-            platform: 'linux/arm64'
