@@ -7,7 +7,7 @@ ARG TARGETVARIANT
 WORKDIR /
 
 # 复制文件
-COPY ["agent-linux-${TARGETARCH}${TARGETVARIANT:+-${TARGETVARIANT}}", "agent.yml", "LICENSE", "NOTICE", "/"]
+COPY ["agent-linux-${TARGETARCH}${TARGETVARIANT:+${TARGETVARIANT}}", "agent.yml", "LICENSE", "NOTICE", "/"]
 
 # 建立软链接
 RUN ln -s agent-* agent && mkdir -p config
