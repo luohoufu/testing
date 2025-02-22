@@ -16,27 +16,27 @@ on:
         required: false
         default: ""
       PUBLISH_RELEASE:
-        description: 'Publish Release?'
+        description: 'Publish Release'
         required: false
         type: boolean
         default: true
       AGENT_PUBLISH:
-        description: 'Run Agent Publish?'
+        description: 'Agent'
         required: false
         type: boolean
         default: true
       CONSOLE_PUBLISH:
-        description: 'Run Console Publish?'
+        description: 'Console'
         required: false
         type: boolean
         default: true
       GATEWAY_PUBLISH:
-        description: 'Run Gateway Publish?'
+        description: 'Gateway'
         required: false
         type: boolean
         default: true
       LOADGEN_PUBLISH:
-        description: 'Run Loadgen Publish?'
+        description: 'Loadgen'
         required: false
         type: boolean
         default: true
