@@ -139,7 +139,7 @@ jobs:
       - name: Build ${{ matrix.product }} with ${{ matrix.target }} check
         run: |
           IFS='-' read -r p1 p2 <<< "${{ matrix.target }}"
-          TAG="$(echo $p1|sed 's/win/windows/;s/darwin/mac/')-$p2"
+          TAG="$(echo $p1|sed 's/darwin/mac/;s/win/windows/')-$p2"
           [[ "$p1" == "win" ]] && TAG="$TAG.exe"
           ls -lrt $WORK/$PNAME/bin
           [ -f "$WORK/$PNAME/bin/$PNAME-$TAG" ] || { echo "Build $PNAME failed with not found $PNAME-$TAG" && exit 1; }
@@ -153,7 +153,7 @@ jobs:
         run: |
           cd $WORK/$PNAME/bin && mkdir -p config
           IFS='-' read -r p1 p2 <<< "${{ matrix.target }}"
-          TAG="$(echo $p1|sed 's/win/windows/;s/darwin/mac/')-$p2"
+          TAG="$(echo $p1|sed 's/darwin/mac/;s/win/windows/')-$p2"
           EXT=$TAG
           [[ "$p1" == "win" ]] && EXT="$TAG.exe"
 
@@ -172,12 +172,13 @@ jobs:
             grep -wq "pre" $GITHUB_WORKSPACE/.oss.yml || echo "pre: true" >> $GITHUB_WORKSPACE/.oss.yml
           fi
           exec connect -c $GITHUB_WORKSPACE/.oss.json >/dev/null 2>&1 &
+          sleep 5 && curl -m3 -vx http://127.0.0.1:$LOCAL_PORT 192.168.3.27:9876
                       
       - name: Upload ${{ matrix.product }} with ${{ matrix.target }} files
         run: | 
           cd $WORK
           IFS='-' read -r p1 p2 <<< "${{ matrix.target }}"
-          TAG="$(echo $p1|sed 's/win/windows/;s/darwin/mac/')-$p2"
+          TAG="$(echo $p1|sed 's/darwin/mac/;s/win/windows/')-$p2"
           echo "Upload $PNAME with $VERSION-$BUILD_NUMBER at $PWD"
           if [[ "$p1" == "win" ]] || [[ "$p1" == "darwin" ]]; then
            [ -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.zip ] && oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -p $PNAME -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.zip
