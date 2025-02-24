@@ -6,9 +6,6 @@ env:
   PUBLISH_VERSION: ${{ inputs.PUBLISH_VERSION || vars.PUBLISH_VERSION }}
   
 on:
-  push:
-  schedule:
-    - cron: '15 16 * * *'
   workflow_dispatch:
     inputs:
       PUBLISH_VERSION:
@@ -260,7 +257,7 @@ jobs:
                 tar zcf $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.tar.gz $PNAME-$EXT $PNAME.yml LICENSE NOTICE config
             fi
           done
-          ls -lrt $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.*
+          ls -lrt $WORK/$PNAME-$VERSION-$BUILD_NUMBER.*
                       
       - name: Upload ${{ matrix.product }} files
         run: | 
@@ -270,7 +267,7 @@ jobs:
             TAG="$(echo $p1|sed 's/darwin/mac/;s/win/windows/')-$p2"
             echo "Upload $PNAME with $VERSION-$BUILD_NUMBER at $PWD"
             if [[ "$p1" == "win" ]] || [[ "$p1" == "darwin" ]]; then
-            [ -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.zip ] && oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -p $PNAME -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.zip
+                [ -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.zip ] && oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -p $PNAME -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.zip
             else
                 [ -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.tar.gz ] && oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -p $PNAME -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.tar.gz
             fi
