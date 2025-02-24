@@ -1,12 +1,13 @@
 FROM alpine AS builder
 
 ARG TARGETARCH
+ARG TARGETVARIANT
 
 # 指定工作目录
 WORKDIR /
 
 # 复制文件
-COPY ["loadgen-linux-${TARGETARCH}", "loadgen.yml", "*.dsl", "LICENSE", "NOTICE", "/"]
+COPY ["loadgen-linux-${TARGETARCH}${TARGETVARIANT:+${TARGETVARIANT}}", "loadgen.yml", "*.dsl", "LICENSE", "NOTICE", "/"]
 
 # 建立软链接
 RUN ln -s loadgen-* loadgen

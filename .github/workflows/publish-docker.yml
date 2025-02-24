@@ -1,4 +1,4 @@
-name: Products Publish
+name: Products Publish Docker
 
 env:
   GO_VERSION: ${{ vars.GO_VERSION }}
@@ -6,6 +6,7 @@ env:
   PUBLISH_VERSION: ${{ inputs.PUBLISH_VERSION || vars.PUBLISH_VERSION }}
   
 on:
+  push:
   schedule:
     - cron: '15 16 * * *'
   workflow_dispatch:
@@ -41,54 +42,28 @@ on:
         default: true
 
 jobs:
-  generate-matrix:
+  generate-matrix: # 新增作业
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      matrix: ${{ steps.gen-matrix.outputs.matrix }}
     steps:
-      - name: Set matrix
-        id: set-matrix
+      - name: Checkout code # 检出代码以访问脚本
+        uses: actions/checkout@v4
+      - name: Generate matrix
+        id: gen-matrix
         run: |
-          matrix_includes=()
-          targets=(win-amd64 win-386 linux-amd64 linux-386 linux-mips64 linux-mips64le linux-armv6 linux-armv7 linux-arm64 linux-loong64 linux-riscv64 darwin-amd64 darwin-arm64)
-          products=(agent console gateway loadgen)
-
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            if [[ "${{ inputs.AGENT_PUBLISH }}" == "true" ]]; then
-              for target in "${targets[@]}"; do
-                matrix_includes+=('{"product": "agent", "target": "'"$target"'" }')
-              done
-            fi
-            if [[ "${{ inputs.CONSOLE_PUBLISH }}" == "true" ]]; then
-              for target in "${targets[@]}"; do
-                matrix_includes+=('{"product": "console", "target": "'"$target"'" }')
-              done
-            fi
-            if [[ "${{ inputs.GATEWAY_PUBLISH }}" == "true" ]]; then
-              for target in "${targets[@]}"; do
-                matrix_includes+=('{"product": "gateway", "target": "'"$target"'" }')
-              done
-            fi
-
-            if [[ "${{ inputs.LOADGEN_PUBLISH }}" == "true" ]]; then
-              for target in "${targets[@]}"; do
-                matrix_includes+=('{"product": "loadgen", "target": "'"$target"'" }')
-              done
-            fi
-          else
-            # 非手动触发：构建所有 product 和 target
-            for product in "${products[@]}"; do
-              for target in "${targets[@]}"; do
-                matrix_includes+=('{"product": "'"$product"'", "target": "'"$target"'" }')
-              done
-            done
-          fi
-
-          echo "matrix=[$(IFS=,; echo "${matrix_includes[*]}")]" >> "$GITHUB_OUTPUT"
+          matrix=$($GITHUB_WORKSPACE/scripts/generate_matrix.sh \
+            AGENT_BUILD="${{ inputs.AGENT_PUBLISH }}" \
+            CONSOLE_BUILD="${{ inputs.CONSOLE_PUBLISH }}" \
+            GATEWAY_BUILD="${{ inputs.GATEWAY_PUBLISH }}" \
+            LOADGEN_BUILD="${{ inputs.LOADGEN_PUBLISH }}" \
+            GITHUB_EVENT_NAME="$GITHUB_EVENT_NAME"
+          )
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
   publish:
     needs: generate-matrix
-    name: Publish ${{ matrix.product }} with ${{ matrix.target }}
+    name: Publish ${{ matrix.product }}
     runs-on: ubuntu-latest
     env:
         OSS_EP: ${{ secrets.OSS_EP }}
@@ -102,6 +77,7 @@ jobs:
         CONNECT_TIMEOUT: ${{ vars.CONNECT_TIMEOUT }}
         CONNECT_MODE: ${{ vars.CONNECT_MODE }}
         CONNECT_METHOD: ${{ secrets.CONNECT_METHOD }}
+        TARGETS: win-amd64 win-386 linux-amd64 linux-386 linux-mips64 linux-mips64le linux-armv6 linux-armv7 linux-arm64 linux-loong64 linux-riscv64 darwin-amd64 darwin-arm64
     strategy:
       fail-fast: false
       matrix:
@@ -156,13 +132,13 @@ jobs:
       - name: Check ${{ matrix.product }} go toolchain
         run: go version
 
-      - name: Set up nodejs toolchain
+      - name: Set up  with ${{ matrix.product }} nodejs toolchain
         if: matrix.product == 'console'
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODEJS_VERSION }}
 
-      - name: Check nodejs toolchain
+      - name: Check  with ${{ matrix.product }} nodejs toolchain
         if: matrix.product == 'console'
         run: |
           if ! command -v cnpm >/dev/null 2>&1; then
@@ -197,22 +173,27 @@ jobs:
           echo EOL=${{ vars.EOL }} >> $GITHUB_ENV
           echo BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S") >> $GITHUB_ENV
 
-      - name: Build ${{ matrix.product }} with ${{ matrix.target }}
+      - name: Build ${{ matrix.product }}
         run: |
           if [[ "${{ matrix.product }}" == "console" ]]; then
             cd $WORK/$PNAME/web && cnpm install --quiet --no-progress && cnpm run build --quiet
           fi
-          cd $WORK/$PNAME && make build-${{ matrix.target }}
+          # build all targets
+          for tag in $TARGETS; do
+            cd $WORK/$PNAME && make build-$tag
+          done
 
-      - name: Build ${{ matrix.product }} with ${{ matrix.target }} check
+      - name: Build ${{ matrix.product }} check
         run: |
-          IFS='-' read -r p1 p2 <<< "${{ matrix.target }}"
-          TAG="$(echo $p1|sed 's/darwin/mac/;s/win/windows/')-$p2"
-          [[ "$p1" == "win" ]] && TAG="$TAG.exe"
           ls -lrt $WORK/$PNAME/bin
-          [ -f "$WORK/$PNAME/bin/$PNAME-$TAG" ] || { echo "Build $PNAME failed with not found $PNAME-$TAG" && exit 1; }
+          for tag in $TARGETS; do
+            IFS='-' read -r p1 p2 <<< "$tag"
+            TAG="$(echo $p1|sed 's/darwin/mac/;s/win/windows/')-$p2"
+            [[ "$p1" == "win" ]] && TAG="$TAG.exe"
+            [ -f "$WORK/$PNAME/bin/$PNAME-$TAG" ] || { echo "Build $PNAME failed with not found $PNAME-$TAG" && exit 1; }
+          done
 
-      - name: Build ${{ matrix.product }} with ${{ matrix.target }} License and notice process
+      - name: Build ${{ matrix.product }} License and notice process
         run: |
           if [[ "${{ matrix.product }}" == "console" ]]; then
             mkdir -p $WORK/$PNAME/bin/config
@@ -226,30 +207,70 @@ jobs:
           cp -rf $WORK/framework/LICENSE $WORK/$PNAME/bin && cat $WORK/framework/NOTICE $WORK/$PNAME/NOTICE > $WORK/$PNAME/bin/NOTICE
           ls -lrt $WORK/$PNAME/bin
 
-      - name: Archive ${{ matrix.product }} with ${{ matrix.target }} files
+      - name: Set up qemu with ${{ matrix.product }}
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up docker buildx with ${{ matrix.product }}
+        uses: docker/setup-buildx-action@v3
+        #with:
+        #  buildkitd-flags: --debug
+
+      - name: Login to dockerhub with ${{ matrix.product }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Docker build meta with ${{ matrix.product }}
+        run: |
+          echo REPO_NAME=${{ vars.DOCKER_REPO }}/${{ matrix.product }} >> $GITHUB_ENV
+          cat $GITHUB_ENV
+
+      - name: Docker build and push with ${{ matrix.product }}
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ github.workspace }}/${{ matrix.product }}/bin
+          file: ${{ github.workspace }}/products/${{ matrix.product }}/Dockerfile
+          target: prod
+          platforms: |
+            linux/386
+            linux/arm/v6
+            linux/arm/v7
+            linux/amd64
+            linux/arm64/v8
+            linux/riscv64
+          tags: |
+            ${{ env.REPO_NAME }}:${{ env.VERSION }}-${{ env.BUILD_NUMBER }}
+          push: true
+
+      - name: Archive ${{ matrix.product }} files
         run: |
           cd $WORK/$PNAME/bin && mkdir -p config
-          IFS='-' read -r p1 p2 <<< "${{ matrix.target }}"
-          TAG="$(echo $p1|sed 's/darwin/mac/;s/win/windows/')-$p2"
-          EXT=$TAG
-          [[ "$p1" == "win" ]] && EXT="$TAG.exe"
+          for tag in $TARGETS; do
+            IFS='-' read -r p1 p2 <<< "$tag"
+            TAG="$(echo $p1|sed 's/darwin/mac/;s/win/windows/')-$p2"
+            EXT=$TAG
+            [[ "$p1" == "win" ]] && EXT="$TAG.exe"
 
-          echo "Archive $PNAME-$p1-$p2 with [ VERSION $VERSION | BUILD_NUMBER $BUILD_NUMBER ] at $BUILD_DATE"
-          if [[ "$p1" == "win" ]] || [[ "$p1" == "darwin" ]]; then
-            zip -qr $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.zip $PNAME-$EXT $PNAME.yml LICENSE NOTICE config
-          else
-            tar zcf $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.tar.gz $PNAME-$EXT $PNAME.yml LICENSE NOTICE config
-          fi
+            echo "Archive $PNAME-$p1-$p2 with [ VERSION $VERSION | BUILD_NUMBER $BUILD_NUMBER ] at $BUILD_DATE"
+            if [[ "$p1" == "win" ]] || [[ "$p1" == "darwin" ]]; then
+                zip -qr $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.zip $PNAME-$EXT $PNAME.yml LICENSE NOTICE config
+            else
+                tar zcf $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.tar.gz $PNAME-$EXT $PNAME.yml LICENSE NOTICE config
+            fi
+          done
           ls -lrt $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.*
                       
-      - name: Upload ${{ matrix.product }} with ${{ matrix.target }} files
+      - name: Upload ${{ matrix.product }} files
         run: | 
           cd $WORK
-          IFS='-' read -r p1 p2 <<< "${{ matrix.target }}"
-          TAG="$(echo $p1|sed 's/darwin/mac/;s/win/windows/')-$p2"
-          echo "Upload $PNAME with $VERSION-$BUILD_NUMBER at $PWD"
-          if [[ "$p1" == "win" ]] || [[ "$p1" == "darwin" ]]; then
-           [ -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.zip ] && oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -p $PNAME -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.zip
-          else
-            [ -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.tar.gz ] && oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -p $PNAME -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.tar.gz
-          fi
+          for tag in $TARGETS; do
+            IFS='-' read -r p1 p2 <<< "$tag"
+            TAG="$(echo $p1|sed 's/darwin/mac/;s/win/windows/')-$p2"
+            echo "Upload $PNAME with $VERSION-$BUILD_NUMBER at $PWD"
+            if [[ "$p1" == "win" ]] || [[ "$p1" == "darwin" ]]; then
+            [ -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.zip ] && oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -p $PNAME -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.zip
+            else
+                [ -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.tar.gz ] && oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -p $PNAME -f $WORK/$PNAME-$VERSION-$BUILD_NUMBER-$TAG.tar.gz
+            fi
+          done

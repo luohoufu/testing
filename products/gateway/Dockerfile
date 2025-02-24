@@ -1,12 +1,13 @@
 FROM alpine AS builder
 
 ARG TARGETARCH
+ARG TARGETVARIANT
 
 # 指定工作目录
 WORKDIR /
 
 # 复制文件
-COPY ["gateway-linux-${TARGETARCH}", "gateway.yml", "LICENSE", "NOTICE", "/"]
+COPY ["gateway-linux-${TARGETARCH}${TARGETVARIANT:+${TARGETVARIANT}}", "gateway.yml", "LICENSE", "NOTICE", "/"]
 
 # 建立软链接
 RUN ln -s gateway-* gateway
