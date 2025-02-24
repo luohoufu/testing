@@ -81,7 +81,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+        include: ${{ needs.generate-matrix.outputs.matrix }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
