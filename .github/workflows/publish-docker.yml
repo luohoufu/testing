@@ -53,10 +53,10 @@ jobs:
         id: gen-matrix
         run: |
           matrix=$($GITHUB_WORKSPACE/scripts/matrix.sh \
-            AGENT_BUILD="${{ inputs.AGENT_PUBLISH }}" \
-            CONSOLE_BUILD="${{ inputs.CONSOLE_PUBLISH }}" \
-            GATEWAY_BUILD="${{ inputs.GATEWAY_PUBLISH }}" \
-            LOADGEN_BUILD="${{ inputs.LOADGEN_PUBLISH }}" \
+            AGENT_PUBLISH="${{ inputs.AGENT_PUBLISH }}" \
+            CONSOLE_PUBLISH="${{ inputs.CONSOLE_PUBLISH }}" \
+            GATEWAY_PUBLISH="${{ inputs.GATEWAY_PUBLISH }}" \
+            LOADGEN_PUBLISH="${{ inputs.LOADGEN_PUBLISH }}" \
             GITHUB_EVENT_NAME="$GITHUB_EVENT_NAME"
           )
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
