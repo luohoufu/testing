@@ -20,7 +20,7 @@ on:
 
 jobs:
   publish:
-    name: Publish analysis-ik plugins for elasticsearch to oss
+    name: Publish ${{ matrix.plugins }} for ${{ matrix.product }}
     runs-on: ubuntu-latest
     env:
       PNAME: ${{ matrix.plugins }}
