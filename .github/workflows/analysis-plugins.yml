@@ -104,10 +104,6 @@ jobs:
               mvn package -pl $TNAME -am -DskipTests -D$TNAME.version=$ver
             fi
           done < "/tmp/versions"
-          
-      - name: Preper ${{ matrix.plugins }} for ${{ matrix.product }} upload
-        run: |
-          source $GITHUB_WORKSPACE/scripts/env.sh
 
       - name: Upload ${{ matrix.plugins }} for ${{ matrix.product }} all verion files
         run: |
