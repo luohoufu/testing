@@ -65,7 +65,7 @@ jobs:
 
       - name: Preper build code
         run: |
-          source $GITHUB_WORKSPACE/scripts/env-init.sh
+          $GITHUB_WORKSPACE/scripts/env-init.sh
           echo "Build $PNAME start..."
           echo "PATH=$HOME/apache-maven-$MAVEN_VERSION/bin:$PATH" >> $GITHUB_ENV
 
