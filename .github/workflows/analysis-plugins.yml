@@ -88,14 +88,14 @@ jobs:
             # Check published history
             URL=$RELEASE_URL/$PNAME/stable/$TNAME-$PNAME-$ver.zip
             if curl -sI "$URL" | grep "HTTP/1.[01] 200" >/dev/null; then
-              break
+              continue
             fi
             # Build when not publish
             if [[ "${ver%%.*}" -lt 8 ]]; then
               git fetch origin "${ver%%.*}.x" && git checkout "${ver%%.*}.x"
             fi
             echo "Current build for $TNAME version [ $ver ] with branch $(git rev-parse --abbrev-ref HEAD)"
-            if [[ "${ver%%.*}" -lt 8 ]]; then
+            if [[ "${ver%%.*}" -lt 8 ]] && [[  "$TNAME" == "elasticsearch" ]]; then
               echo mvn package -DskipTests -D$TNAME.version=$ver
               mvn package -DskipTests -D$TNAME.version=$ver
             else
@@ -104,21 +104,11 @@ jobs:
             fi
           done < "/tmp/versions"
           
-      - name: Preper oss upload
+      - name: Preper ${{ matrix.plugins }} for ${{ matrix.product }} upload
         run: |
-          if [ -f $GITHUB_WORKSPACE/.oss.json ] ; then
-            echo "no need init the oss json when file is ready."
-          else
-            cat $GITHUB_WORKSPACE/config/oss.json > $GITHUB_WORKSPACE/.oss.json || true
-          fi
-          if [ -f $GITHUB_WORKSPACE/.oss.yml ] ; then
-            echo "no need init the oss config when file is ready."
-          else
-            cat $GITHUB_WORKSPACE/config/oss.yml > $GITHUB_WORKSPACE/.oss.yml || true
-          fi
-          $GITHUB_WORKSPACE/tools/connect -c $GITHUB_WORKSPACE/.oss.json > /dev/null 2>&1 || true
+          source $GITHUB_WORKSPACE/scripts/env.sh
 
-      - name: Upload all verion files
+      - name: Upload ${{ matrix.plugins }} for ${{ matrix.product }} all verion files
         run: |
           target_dirs=$(find $GITHUB_WORKSPACE/$PNAME -maxdepth 3 -name "releases" -print)
           [[ -z "$target_dirs" ]] && exit 0 || echo "Found target directories: $target_dirs"
