@@ -56,8 +56,12 @@ for x in linux-amd64 linux-arm64 mac-amd64 mac-arm64 windows-amd64; do
     # 本地备份
     [ ! -d $BUILD_DISTRIBUTION/bundle ] && mkdir -p $BUILD_DISTRIBUTION/bundle
     cp -rf $WORK/$PNAME/$DNAME $BUILD_DISTRIBUTION/bundle
+    [ ! -f /tmp/.oss.yml ] && cp -rf $GITHUB_WORKSPACE/.oss.yml /tmp
+    if [[ "$(echo "$PRE_RELEASE" | tr '[:upper:]' '[:lower:]')" == "true" ]]; then
+      grep -wq "pre" /tmp/.oss.yml || echo "pre: true" >> /tmp/.oss.yml
+    fi
     # 文件上传
-    oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -f $WORK/$PNAME/$DNAME -k $PNAME/stable/bundle
+    oss upload -c /tmp/.oss.yml -o -f $WORK/$PNAME/$DNAME -k $PNAME/snapshot/bundle
   fi
   cd $WORK && rm -rf $WORK/$FNAME && rm -rf $WORK/$PNAME
 done
