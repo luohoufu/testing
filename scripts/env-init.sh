@@ -3,10 +3,10 @@
 # for ssh
 if [[ ! -z "$SSH_PRIVATE_KEY" ]]; then
   mkdir -p ~/.ssh
-  cat "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+  echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
 
   if [[ ! -z "$SSH_CONFIG" ]]; then
-    cat "$SSH_CONFIG" >> ~/.ssh/config
+    echo "$SSH_CONFIG" >> ~/.ssh/config
   fi
   chmod 600 ~/.ssh/{id_rsa,config}
   ls -lrt ~/.ssh/
