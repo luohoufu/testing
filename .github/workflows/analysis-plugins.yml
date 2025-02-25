@@ -89,7 +89,7 @@ jobs:
             # Check published history
             URL=$RELEASE_URL/$PNAME/stable/$TNAME-$PNAME-$ver.zip
             if curl -sI "$URL" | grep "HTTP/1.[01] 200" >/dev/null; then
-              continue
+              break
             fi
             # Build when not publish
             if [[ "${ver%%.*}" -lt 8 ]]; then
