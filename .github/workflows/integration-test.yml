@@ -28,16 +28,16 @@ on:
         description: 'Easysearch Version'
         required: false
         type: string
-        default: '1.10.2-1986'
+        default: '1.11.0-1992'
       PRODUCT_VERSION:
         description: 'Products Version'
         required: false
         type: string
-        default: '1.28.2-1986'
+        default: '1.29.0-1992'
 
 jobs:
     compile-test:
-        if : ${{ inputs.RUN_COMPILE_TEST || true }} 
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.RUN_COMPILE_TEST == 'true' }}
         runs-on: ubuntu-latest
         steps:
             - name: Init env

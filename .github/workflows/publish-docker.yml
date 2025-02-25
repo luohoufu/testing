@@ -49,7 +49,7 @@ jobs:
       - name: Generate matrix
         id: gen-matrix
         run: |
-          matrix=$($GITHUB_WORKSPACE/scripts/matrix.sh \
+          matrix=$($GITHUB_WORKSPACE/scripts/go-matrix.sh \
             AGENT_PUBLISH="${{ inputs.AGENT_PUBLISH }}" \
             CONSOLE_PUBLISH="${{ inputs.CONSOLE_PUBLISH }}" \
             GATEWAY_PUBLISH="${{ inputs.GATEWAY_PUBLISH }}" \
@@ -107,8 +107,8 @@ jobs:
 
       - name: Setup ${{ matrix.product }} env
         run: |
-          source $GITHUB_WORKSPACE/scripts/env.sh
-          $GITHUB_WORKSPACE/scripts/gen.sh
+          source $GITHUB_WORKSPACE/scripts/go-init.sh
+          $GITHUB_WORKSPACE/scripts/env-init.sh
           if [[ "$(echo "${{ vars.PRE_RELEASE }}" | tr '[:upper:]' '[:lower:]')" == "true" ]]; then
             grep -wq "pre" $GITHUB_WORKSPACE/.oss.yml || echo "pre: true" >> $GITHUB_WORKSPACE/.oss.yml
           fi
