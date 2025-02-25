@@ -4,9 +4,6 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 on:
-  schedule:
-    - cron: '30 16 * * *'
-  push:
   workflow_dispatch:
 
 jobs:

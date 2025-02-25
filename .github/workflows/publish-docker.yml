@@ -1,4 +1,4 @@
-name: Products Publish Docker
+name: Products Files & Docker Publish 
 
 env:
   GO_VERSION: ${{ vars.GO_VERSION }}

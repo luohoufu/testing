@@ -1,4 +1,4 @@
-name: Analysis IK Publish
+name: Analysis Plubins Publish
 
 env:
     RELEASE_URL: ${{ vars.RELEASE_URL }}
@@ -8,7 +8,6 @@ env:
     MAVEN_DOWNLOAD_URL: ${{ vars.MAVEN_DOWNLOAD_URL }}
 
 on:
-  push:
   schedule:
     - cron: '30 16 * * *'
   workflow_dispatch:

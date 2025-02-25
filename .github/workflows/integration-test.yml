@@ -1,4 +1,4 @@
-name: Products Test
+name: Products Integration Test
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
