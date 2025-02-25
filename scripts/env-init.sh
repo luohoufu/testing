@@ -34,7 +34,7 @@ if [[ ! -z "$LOCAL_PORT" ]]; then
 fi
 
 # for oss
-if [[ ! -z "$OSS_ENDPOINT" ]]; then
+if [[ ! -z "$OSS_EP" ]]; then
   cat <<-EOF > "$GITHUB_WORKSPACE/.oss.yml"
 	endpoint: $OSS_EP
 	accesskeyid: $OSS_AK
