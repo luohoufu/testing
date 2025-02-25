@@ -1,0 +1,57 @@
+name: Easysearch Files & Docker Publish 
+
+env:
+  PNAME: easysearch
+  PRE_RELEASE: ${{ vars.PRE_RELEASE }}
+  RELEASE_URL: ${{ vars.RELEASE_URL }}
+  PUBLISH_RELEASE: ${{ vars.PUBLISH_RELEASE }}
+  JAVA_DISTRIBUTION: ${{ vars.JAVA_DISTRIBUTION }}
+  JAVA_VERSION: ${{ vars.JAVA_VERSION }}
+  GRADLE_VERSION: ${{ vars.GRADLE_VERSION }}
+  PUBLISH_VERSION: ${{ inputs.PUBLISH_VERSION || vars.EASYSEARCH_PUBLISH_VERSION }}
+  
+on:
+  push:
+  schedule:
+    - cron: '45 16 * * *'  
+  workflow_dispatch:
+    inputs:
+      PUBLISH_VERSION:
+        description: 'Publish Version'
+        required: false
+        default: ""
+      PUBLISH_RELEASE:
+        description: 'Publish Release'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  publish:
+    name: Publish easysearch to oss
+    runs-on: self-host
+    container:      
+      image: gitea/runner-images:ubuntu-latest
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.PUBLISH_RELEASE == 'true' }}
+    steps:   
+      - name: Set up java toolchain
+        uses: actions/setup-java@v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Set up gradle
+        run: |
+          if [ ! -d "$HOME/gradle-$GRADLE_VERSION" ]; then
+            wget -q -nc --show-progress --progress=bar:force:noscroll https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip -P $HOME
+            cd $HOME && unzip -q gradle-$GRADLE_VERSION-bin.zip && rm -rf gradle-$GRADLE_VERSION-bin.zip
+          fi
+          echo Gradle path is $HOME/gradle-$GRADLE_VERSION
+
+      - name: Set up and check env
+        run: |
+          $GITHUB_WORKSPACE/scripts/env-init.sh
+          echo "PATH=$HOME/gradle-$GRADLE_VERSION/bin:$PATH" >> $GITHUB_ENV
+
+      - name: Checkout code
+        uses: actions/checkout@v4
