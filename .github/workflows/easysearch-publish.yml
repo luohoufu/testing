@@ -34,7 +34,17 @@ jobs:
     container:      
       image: gitea/runner-images:ubuntu-latest
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.PUBLISH_RELEASE == 'true' }}
-    steps:   
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up and check env
+        run: |
+          $GITHUB_WORKSPACE/scripts/env-init.sh
+          echo "PATH=$HOME/gradle-$GRADLE_VERSION/bin:$PATH" >> $GITHUB_ENV
+          # start connect server
+          exec connect -c $GITHUB_WORKSPACE/.oss.json >/dev/null 2>&1 &
+
       - name: Set up java toolchain
         uses: actions/setup-java@v4
         with:
@@ -49,14 +59,8 @@ jobs:
           fi
           echo Gradle path is $HOME/gradle-$GRADLE_VERSION
 
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
       - name: Checkout ${{ env.PNAME }} repo
         run: |
           [ ! -d $GITHUB_WORKSPACE/$PNAME ] && git clone $SSH_GIT_REPO/$PNAME $GITHUB_WORKSPACE/$PNAME
 
-      - name: Set up and check env
-        run: |
-          $GITHUB_WORKSPACE/scripts/env-init.sh
-          echo "PATH=$HOME/gradle-$GRADLE_VERSION/bin:$PATH" >> $GITHUB_ENV          
+      
