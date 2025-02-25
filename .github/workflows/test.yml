@@ -25,3 +25,13 @@ jobs:
           echo $GITHUB_WORKSPACE
           env | sort
           ls -lrt $GITHUB_WORKSPACE
+
+  job3:
+    name: Job3
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up and check env
+        run: |
+          ls -lrt /bin
+          ls -lrt /sbin
+          find / -name socat 2>/dev/null

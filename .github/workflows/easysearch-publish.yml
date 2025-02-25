@@ -48,12 +48,10 @@ jobs:
           fi
           echo Gradle path is $HOME/gradle-$GRADLE_VERSION
 
-      - name: Set up and check env
-        run: |
-          $GITHUB_WORKSPACE/scripts/env-init.sh
-          echo "PATH=$HOME/gradle-$GRADLE_VERSION/bin:$PATH" >> $GITHUB_ENV
-
       - name: Checkout code
         uses: actions/checkout@v4
 
-    
+      - name: Set up and check env
+        run: |
+          $GITHUB_WORKSPACE/scripts/env-init.sh
+          echo "PATH=$HOME/gradle-$GRADLE_VERSION/bin:$PATH" >> $GITHUB_ENV    
