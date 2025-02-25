@@ -71,7 +71,7 @@ jobs:
 
       - name: Set build ${{ matrix.plugins }} for ${{ matrix.product }} versions
         run: |
-          if ${{ matrix.product }} == "elasticsearch" ; then
+          if [[ $TNAME == "elasticsearch" ]] ; then
             LATEST_VERSION=$(curl -s $GITHUB_API_URL/repos/elastic/$TNAME/releases | grep -oE 'tag/v[0-9.]+"' | sed 's/tag\/v//; s/\"//g')
             echo "$LATEST_VERSION" > /tmp/versions
           else
@@ -95,7 +95,7 @@ jobs:
               git fetch origin "${ver%%.*}.x" && git checkout "${ver%%.*}.x"
             fi
             echo "Current build for $TNAME version [ $ver ] with branch $(git rev-parse --abbrev-ref HEAD)"
-            if [[ "${ver%%.*}" -lt 8 ]] && [[  "$TNAME" == "elasticsearch" ]]; then
+            if [[ "${ver%%.*}" -lt 8 ]] && [[ "$TNAME" == "elasticsearch" ]]; then
               echo mvn package -DskipTests -D$TNAME.version=$ver
               mvn package -DskipTests -D$TNAME.version=$ver
             else
