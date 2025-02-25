@@ -26,7 +26,8 @@ fi
         }
     ]
 }
-EOF && echo "Connection config setting done."
+EOF
+[ ! -z "$LOCAL_PORT" ] && echo "Connection config setting done."
 
 # for oss
 [ -z "$OSS_EP" ] || cat <<EOF > "$GITHUB_WORKSPACE/.oss.yml"
@@ -34,4 +35,5 @@ endpoint: $OSS_EP
 accesskeyid: $OSS_AK
 accesskeysecret: $OSS_SK
 bucket: $OSS_BK
-EOF && echo "OSS config setting done."
+EOF
+[ ! -z "$LOCAL_PORT" ] && echo "OSS config setting done."
