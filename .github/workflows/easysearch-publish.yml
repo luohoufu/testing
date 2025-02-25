@@ -28,8 +28,8 @@ on:
 
 jobs:
   publish:
-    name: Publish easysearch to oss
-    runs-on: self-host
+    name: Publish easysearch files and docker
+    runs-on: ubuntu-latest
     container:      
       image: gitea/runner-images:ubuntu-latest
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.PUBLISH_RELEASE == 'true' }}
@@ -55,3 +55,5 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v4
+
+    

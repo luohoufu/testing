@@ -1,7 +1,17 @@
 #!/bin/bash
 
+# for ssh
+if [ ! -z "$SSH_PRIVATE_KEY" ]; then
+  mkdir -p ~/.ssh
+  echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+
+  echo "$SSH_CONFIG" >> ~/.ssh/config
+  chmod 600 ~/.ssh/{id_rsa,config}
+ echo "SSH config setting done."
+fi
+
 # for proxy
-cat <<EOF > "$GITHUB_WORKSPACE/.oss.json"
+[ -z "$LOCAL_PORT" ] || cat <<EOF > "$GITHUB_WORKSPACE/.oss.json"
 {
     "local_port": $LOCAL_PORT,
     "local_address": "127.0.0.1",
@@ -16,12 +26,12 @@ cat <<EOF > "$GITHUB_WORKSPACE/.oss.json"
         }
     ]
 }
-EOF
+EOF && echo "Connection config setting done."
 
 # for oss
-cat <<EOF > "$GITHUB_WORKSPACE/.oss.yml"
+[ -z "$OSS_EP" ] || cat <<EOF > "$GITHUB_WORKSPACE/.oss.yml"
 endpoint: $OSS_EP
 accesskeyid: $OSS_AK
 accesskeysecret: $OSS_SK
 bucket: $OSS_BK
-EOF
+EOF && echo "OSS config setting done."
