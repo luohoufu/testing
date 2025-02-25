@@ -8,6 +8,7 @@ env:
   JAVA_DISTRIBUTION: ${{ vars.JAVA_DISTRIBUTION }}
   JAVA_VERSION: ${{ vars.JAVA_VERSION }}
   GRADLE_VERSION: ${{ vars.GRADLE_VERSION }}
+  SSH_GIT_REPO: ${{ secrets.SSH_GIT_REPO }}
   PUBLISH_VERSION: ${{ inputs.PUBLISH_VERSION || vars.EASYSEARCH_PUBLISH_VERSION }}
   
 on:
@@ -50,8 +51,15 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v4
+      
+      - name: Checkout ${{ env.PNAME }} repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.SSH_GIT_REPO }}/${{ env.PNAME }}.git
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ref: main
 
       - name: Set up and check env
         run: |
           $GITHUB_WORKSPACE/scripts/env-init.sh
-          echo "PATH=$HOME/gradle-$GRADLE_VERSION/bin:$PATH" >> $GITHUB_ENV    
+          echo "PATH=$HOME/gradle-$GRADLE_VERSION/bin:$PATH" >> $GITHUB_ENV          
