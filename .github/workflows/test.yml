@@ -32,6 +32,5 @@ jobs:
     steps:
       - name: Set up and check env
         run: |
-          ls -lrt /bin/
-          ls -lrt /sbin/
+          ls -lhr /bin/
           find / -name socat 2>/dev/null
