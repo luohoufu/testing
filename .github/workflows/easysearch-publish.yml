@@ -55,7 +55,7 @@ jobs:
       - name: Checkout ${{ env.PNAME }} repo
         uses: actions/checkout@v4
         with:
-          repository: ${{ env.SSH_GIT_REPO }}/${{ env.PNAME }}.git
+          repository: ${{ env.SSH_GIT_REPO }}/${{ env.PNAME }}
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
           ref: main
 
