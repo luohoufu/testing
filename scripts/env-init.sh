@@ -33,7 +33,7 @@ if [[ ! -z "$LOCAL_PORT" ]]; then
 	  ]
 	}
 	EOF
-  echo "Connection config setting done."
+  echo "Connect config setting done."
 fi
 
 # for oss
@@ -48,4 +48,4 @@ if [[ ! -z "$OSS_EP" ]]; then
 fi
 
 # for nc
-cp -rf $GITHUB_WORKSPACE/tools/nc /usr/bin/nc && chmod +x /usr/bin/nc && echo "update nc done."
+cp -rf $GITHUB_WORKSPACE/tools/nc /usr/bin/nc && chmod +x /usr/bin/nc && echo "Local update nc done."

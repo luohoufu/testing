@@ -56,7 +56,7 @@ jobs:
           $GITHUB_WORKSPACE/scripts/env-init.sh
           echo "PATH=$HOME/gradle-$GRADLE_VERSION/bin:$PATH" >> $GITHUB_ENV
           # start connect server
-          exec connect -c $GITHUB_WORKSPACE/.oss.json >/dev/null 2>&1 &
+          exec RUST_LOG=debug connect -c $GITHUB_WORKSPACE/.oss.json >/tmp/cc.log 2>&1 &
 
       - name: Set up java toolchain
         uses: actions/setup-java@v4
@@ -75,6 +75,7 @@ jobs:
       - name: Checkout ${{ env.PNAME }} repo
         run: |
           ssh -v staging "hostname" && echo "SSH connection to staging is OK"
+          cat /tmp/cc.log
           [ ! -d $GITHUB_WORKSPACE/$PNAME ] && git clone -q $SSH_GIT_REPO/$PNAME $GITHUB_WORKSPACE/$PNAME
           echo "Checkout $PNAME repo done"
 
