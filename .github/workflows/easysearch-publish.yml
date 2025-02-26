@@ -74,7 +74,7 @@ jobs:
           ln -s $HOME/gradle-$GRADLE_VERSION/bin/gradle /bin/gradle
           echo "PATH=$HOME/gradle-$GRADLE_VERSION/bin:$PATH" >> $GITHUB_ENV
           echo Gradle path is $HOME/gradle-$GRADLE_VERSION
-          ls -lh $HOME/gralde-$GRADLE_VERSION
+          ls -lh $HOME && ls -lh $HOME/gradle-$GRADLE_VERSION
 
       - name: Checkout ${{ env.PNAME }} repo
         run: |
@@ -112,7 +112,7 @@ jobs:
           ls -lh ~/.gradle/wrapper && echo "Gradle wrapper done"
           ls -lh /root/.gradle/caches && echo "Root Gradle cache done"
           ls -lh /root/.gradle/wrapper && echo "Root Gradle wrapper done"
-          ls -lh $HOME/gralde-$GRADLE_VERSION && echo "Gradle path done"
+          ls -lh $HOME/gradle-$GRADLE_VERSION && echo "Gradle path done"
 
       - name: Build Darwin
         run: |
