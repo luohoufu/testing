@@ -106,14 +106,6 @@ jobs:
           echo "Build $PNAME start..."
           cd $GITHUB_WORKSPACE/$PNAME && gradle buildOssNoJdkDarwinAarch64Tar
       
-      - name: Check gradle build
-        run: |
-          ls -lh ~/.gradle/caches && echo "Gradle cache done"
-          ls -lh ~/.gradle/wrapper && echo "Gradle wrapper done"
-          ls -lh /root/.gradle/caches && echo "Root Gradle cache done"
-          ls -lh /root/.gradle/wrapper && echo "Root Gradle wrapper done"
-          ls -lh $HOME/gradle-$GRADLE_VERSION && echo "Gradle path done"
-
       - name: Build Darwin
         run: |
           echo "Build $PNAME start..."          

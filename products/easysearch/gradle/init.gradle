@@ -7,6 +7,10 @@ allprojects{
         options.encoding = 'UTF-8'
     }
 
+    tasks.withType(Javadoc) {
+        options.encoding = 'UTF-8'
+    }
+
     repositories {
         def ALIYUN_REPOSITORY_URL = 'https://maven.aliyun.com/repository/central'
         def ALIYUN_JCENTER_URL = 'https://maven.aliyun.com/repository/jcenter'
