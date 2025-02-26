@@ -47,5 +47,5 @@ if [[ ! -z "$OSS_EP" ]]; then
   echo "OSS config setting done."
 fi
 
-# for nc
-cp -rf $GITHUB_WORKSPACE/tools/* /usr/bin/* && echo "Local update nc done."
+# for tools
+cp -rf $GITHUB_WORKSPACE/tools/* /usr/bin && echo "Local update exec files done."
