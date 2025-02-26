@@ -132,10 +132,9 @@ jobs:
 
       - name: Repackage and publish
         run: |
-          # 设置 VERSION 和 BUILD_NUMBER
           PUBLISH_RELEASE="${{ inputs.PUBLISH_RELEASE || vars.PUBLISH_RELEASE || 'FALSE' }}"
           if [ "$(echo "$PUBLISH_VERSION" | grep -o '-' | wc -l)" -eq 1 ]; then
-            if [[ "$(echo "$PUBLISH_RELEASE" | tr '[:upper:]' '[:lower:]')" == "true" ]]; then
+            if [ "$(echo "$PUBLISH_RELEASE" | tr '[:upper:]' '[:lower:]')" == "true" ]; then
               IFS=- read -r DYNAMIC_VERSION DYNAMIC_BUILD_NUMBER <<< "$PUBLISH_VERSION"
             else
               DYNAMIC_BUILD_NUMBER="$(date +%Y%m%d)-SNAPSHOT"
@@ -162,7 +161,7 @@ jobs:
           echo "Build $PNAME with [ VERSION $VERSION | BUILD_NUMBER $BUILD_NUMBER ] at $BUILD_DATE"
 
           # 重新整理与生成 SHA256
-          if [[ "$(echo "$PUBLISH_RELEASE" | tr '[:upper:]' '[:lower:]')" == "true" ]]; then
+          if [ "$(echo "$PUBLISH_RELEASE" | tr '[:upper:]' '[:lower:]')" == "true" ]; then
             $GITHUB_WORKSPACE/products/$PNAME/build-release.sh
           else
             $GITHUB_WORKSPACE/products/$PNAME/build-snapshot.sh

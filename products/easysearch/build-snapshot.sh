@@ -9,7 +9,7 @@ WORKDIR="$(mktemp -d)"
 SRC=$GITHUB_WORKSPACE/$PNAME
 DEST=$BUILD_DISTRIBUTION
 
-echo "Clean history build release files"
+echo "Clean history build snapshot files"
 rm -rf $DEST/easysearch-*.tar.gz
 
 echo "Repack $PNAME from $SRC to $DEST with [ $VERSION-$BUILD_NUMBER ]"
