@@ -55,9 +55,12 @@ jobs:
         run: |
           $GITHUB_WORKSPACE/scripts/env-init.sh
           echo "PATH=$HOME/gradle-$GRADLE_VERSION/bin:$PATH" >> $GITHUB_ENV
-          # start connect server
-          export RUST_LOG=debug
-          exec connect -c $GITHUB_WORKSPACE/.oss.json >/tmp/cc.log 2>&1 &
+          
+      - name: Run connect in background
+        run: |
+          connect -c "$GITHUB_WORKSPACE/.oss.json" >/tmp/cc.log 2>&1 &
+        env:
+          RUST_LOG: debug
 
       - name: Set up java toolchain
         uses: actions/setup-java@v4
