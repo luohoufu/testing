@@ -28,9 +28,7 @@ for x in linux-amd64 linux-arm64 mac-amd64 mac-arm64 windows-amd64; do
   JNAME=`find $BUILD_JDKS -name "zulu*-$JARK*" |head -n 1`
   URL="$RELEASE_URL/$PNAME/stable/bundle/$DNAME"
   if curl -sI "$URL" | grep "HTTP/1.[01] 200" >/dev/null; then
-    echo "Exists release file $DNAME"
-    rm -rf $WORK/$FNAME
-    continue
+    echo "Exists release file $DNAME will overwrite it"
   fi
   echo -e "From $FNAME \nTo $DNAME \nJark $JARK \nJre $JNAME"
   # 解压并删除原文件
