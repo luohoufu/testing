@@ -1,11 +1,11 @@
 #!/bin/bash
 
-export https_proxy=$PROXY
-export HTTPS_PROXY=$PROXY
-
-echo "Setting https_proxy is $https_proxy"
-
 WORK=$GITHUB_WORKSPACE/products/$PNAME
+DEST=$GITHUB_WORKSPACE/dest
+
+echo "Prepar build docker files"
+mkdir -p $DEST
+
 cd $WORK
 
 #docker image tag
@@ -14,7 +14,7 @@ echo "Publish setting $PNAME with docker tag $DOCKER_TAG"
 
 for t in amd64 arm64; do
   mkdir -p $WORK/{$PNAME-$t,agent-$t}
-  EZS_FILE=$BUILD_DISTRIBUTION/$PNAME-$VERSION-$BUILD_NUMBER-linux-$t.tar.gz
+  EZS_FILE=$DEST/$PNAME-$VERSION-$BUILD_NUMBER-linux-$t.tar.gz
   if [ -f $EZS_FILE ]; then
     echo -e "Extract file \nfrom $EZS_FILE \nto $WORK/$PNAME-$t"
     tar -zxf $EZS_FILE -C $WORK/$PNAME-$t
@@ -49,7 +49,7 @@ for t in amd64 arm64; do
     plugins=(sql analysis-ik analysis-icu analysis-stconvert analysis-pinyin async_search index-management ingest-common ingest-geoip ingest-user-agent mapper-annotated-text mapper-murmur3 mapper-size transport-nio cross-cluster-replication knn)
     for p in ${plugins[@]}; do
       echo "Installing plugin $p-$VERSION ..."
-      echo y | $WORK/$PNAME-$t/bin/$PNAME-plugin install file:///$BUILD_DISTRIBUTION/plugins/$p/$p-$VERSION.zip > /dev/null 2>&1
+      echo y | $WORK/$PNAME-$t/bin/$PNAME-plugin install file:///$DEST/plugins/$p/$p-$VERSION.zip > /dev/null 2>&1
     done
   fi
 done

@@ -1,5 +1,7 @@
 name: Products Files Publish
-
+defaults:
+  run:
+    shell: bash
 env:
   GO_VERSION: ${{ vars.GO_VERSION }}
   NODEJS_VERSION: ${{ vars.NODEJS_VERSION }}

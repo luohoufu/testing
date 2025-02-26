@@ -1,5 +1,7 @@
 name: Analysis Plubins Publish
-
+defaults:
+  run:
+    shell: bash
 env:
     RELEASE_URL: ${{ vars.RELEASE_URL }}
     JAVA_DISTRIBUTION: ${{ vars.JAVA_DISTRIBUTION}}

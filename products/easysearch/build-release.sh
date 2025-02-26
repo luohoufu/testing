@@ -2,10 +2,10 @@
 
 WORKDIR="$(mktemp -d)"
 SRC=$GITHUB_WORKSPACE/$PNAME
-DEST=$BUILD_DISTRIBUTION
+DEST=$GITHUB_WORKSPACE/dest
 
-echo "Clean history build release files"
-rm -rf $DEST/easysearch-*.tar.gz
+echo "Prepar build release files"
+mkdir -p $DEST
 
 echo "Repack $PNAME from $SRC to $DEST with [ $VERSION-$BUILD_NUMBER ]"
 
@@ -82,13 +82,5 @@ for p in ${plugins[@]}; do
     echo Upload $f to oss
     oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -f $f -k $PNAME/stable/plugins/$p
     oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -f $f.sha512 -k $PNAME/stable/plugins/$p
-  fi
-done
-
-# 清理工作目录
-find "$BUILD_DISTRIBUTION" -type f \( -name "*.tar.gz" -o -name "*.zip" -o -name "*.jar" \) -print0 | while IFS= read -r -d $'\0' file; do
-  if [[ ! "$file" =~ "$VERSION" ]]; then
-   echo "Removing file $file"
-   rm -rf "$file"
   fi
 done
