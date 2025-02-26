@@ -128,7 +128,7 @@ jobs:
       - name: Build plugins
         run: |
           echo "Build $PNAME start..."          
-          cd $GITHUB_WORKSPACE/$PNAME/plugins && gradle assemble
+          cd $GITHUB_WORKSPACE/$PNAME/plugins && gradle assemble -x test -x javadoc
 
       - name: Repackage and publish
         run: |
