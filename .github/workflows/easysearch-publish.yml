@@ -19,6 +19,7 @@ env:
   OSS_AK: ${{ secrets.OSS_AK }}
   OSS_SK: ${{ secrets.OSS_SK }}
   OSS_BK: ${{ secrets.OSS_BK }}
+  OSS_MODE: ${{ secrets.OSS_MODE }}
   LOCAL_PORT: ${{ vars.LOCAL_PORT }}
   CONNECT_SERVER: ${{ secrets.CONNECT_SERVER }}
   CONNECT_PORT: ${{ secrets.CONNECT_PORT }}

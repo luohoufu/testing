@@ -95,6 +95,7 @@ jobs:
         OSS_AK: ${{ secrets.OSS_AK }}
         OSS_SK: ${{ secrets.OSS_SK }}
         OSS_BK: ${{ secrets.OSS_BK }}
+        OSS_MODE: ${{ secrets.OSS_MODE }}
     strategy:
       fail-fast: false
       matrix:

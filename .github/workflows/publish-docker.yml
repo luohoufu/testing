@@ -72,6 +72,7 @@ jobs:
         OSS_AK: ${{ secrets.OSS_AK }}
         OSS_SK: ${{ secrets.OSS_SK }}
         OSS_BK: ${{ secrets.OSS_BK }}
+        OSS_MODE: ${{ secrets.OSS_MODE }}
         TARGETS: win-amd64 win-386 linux-amd64 linux-386 linux-mips64 linux-mips64le linux-armv6 linux-armv7 linux-arm64 linux-loong64 linux-riscv64 darwin-amd64 darwin-arm64
     strategy:
       fail-fast: false

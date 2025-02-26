@@ -46,6 +46,7 @@ if [[ ! -z "$OSS_EP" ]]; then
 	accesskeyid: $OSS_AK
 	accesskeysecret: $OSS_SK
 	bucket: $OSS_BK
+	mode: $OSS_MODE
 	EOF
   echo "OSS config setting done."
 fi
