@@ -80,9 +80,8 @@ jobs:
           echo "PATH=$HOME/gradle-$GRADLE_VERSION/bin:$PATH" >> $GITHUB_ENV
           # init gradle
           mkdir -p $HOME/.gradle && mkdir -p /root/.gradle
-          cp $GITHUB_WORKSPACE/products/$PNAME/gradle/* $HOME/.gradle
-          cp $GITHUB_WORKSPACE/products/$PNAME/gradle/* /root/.gradle
-          ls -lrt $HOME/.m2/ && ls -alr $HOME/.gradle/
+          rsync -a "$GITHUB_WORKSPACE/products/$PNAME/gradle/"* "$HOME/.gradle/" /root/.gradle/
+          ls -lrt $HOME/.m2/ && ls -alr $HOME/.gradle/ && ls -alr /root/.gradle/
 
       - name: Checkout ${{ env.PNAME }} repo
         run: |
