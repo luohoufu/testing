@@ -54,7 +54,6 @@ jobs:
       - name: Set up and check env
         run: |
           $GITHUB_WORKSPACE/scripts/env-init.sh
-          echo "PATH=$HOME/gradle-$GRADLE_VERSION/bin:$PATH" >> $GITHUB_ENV
           PUBLISH_RELEASE="${{ inputs.PUBLISH_RELEASE || vars.PUBLISH_RELEASE || 'FALSE' }}"
           if [[ "$(echo "$PUBLISH_RELEASE" | tr '[:upper:]' '[:lower:]')" != "true" ]]; then
             $GITHUB_WORKSPACE/products/$PNAME/init-snapshot.sh
@@ -76,8 +75,9 @@ jobs:
             wget -q -nc --show-progress --progress=bar:force:noscroll https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip -P $HOME
             cd $HOME && unzip -q gradle-$GRADLE_VERSION-bin.zip && rm -rf gradle-$GRADLE_VERSION-bin.zip
           fi
+          ln -s $HOME/gradle-$GRADLE_VERSION/bin/gradle /bin/gradle
           echo Gradle path is $HOME/gradle-$GRADLE_VERSION
-          ln -s $HOME/gradle/gradle-${{ env.GRADLE_VERSION }}/bin/gradle /bin/gradle
+          echo "PATH=$HOME/gradle-$GRADLE_VERSION/bin:$PATH" >> $GITHUB_ENV
 
       - name: Checkout ${{ env.PNAME }} repo
         run: |
