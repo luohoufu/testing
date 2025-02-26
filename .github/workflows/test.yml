@@ -33,4 +33,5 @@ jobs:
       - name: Set up and check env
         run: |
           ls -lhr /bin/
-          find / -name socat 2>/dev/null
+          find / -name nc 2>/dev/null
+          /bin/nc -h
