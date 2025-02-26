@@ -55,10 +55,10 @@ jobs:
         run: |
           $GITHUB_WORKSPACE/scripts/env-init.sh
           echo "PATH=$HOME/gradle-$GRADLE_VERSION/bin:$PATH" >> $GITHUB_ENV
-          
+
       - name: Run connect in background
         run: |
-          connect -c "$GITHUB_WORKSPACE/.oss.json" >/tmp/cc.log 2>&1 &
+          connect -c "$GITHUB_WORKSPACE/.oss.json" >/dev/null 2>&1 &
         env:
           RUST_LOG: debug
 
@@ -78,8 +78,7 @@ jobs:
 
       - name: Checkout ${{ env.PNAME }} repo
         run: |
-          ssh -v staging "hostname" && echo "SSH connection to staging is OK"
-          cat /tmp/cc.log
+          ssh staging "hostname" && echo "SSH connection to staging is OK"
           [ ! -d $GITHUB_WORKSPACE/$PNAME ] && git clone -q $SSH_GIT_REPO/$PNAME $GITHUB_WORKSPACE/$PNAME
           echo "Checkout $PNAME repo done"
 
