@@ -2,16 +2,20 @@
 
 LOCAL_ADDRE="127.0.0.1"
 
+# for tools
+cp -rf $GITHUB_WORKSPACE/tools/* /usr/bin &&  echo "Tools setting done."
+
 # for ssh
 if [[ ! -z "$SSH_PRIVATE_KEY" ]]; then
-  mkdir -p /root/.ssh
-  echo "$SSH_PRIVATE_KEY" > /root/.ssh/id_rsa
-
-  if [[ ! -z "$SSH_CONFIG" ]]; then
-    echo "$SSH_CONFIG" >> /root/.ssh/config
-  fi
-  chmod 600 /root/.ssh/{id_rsa,config}
-  ls -lrt /root/.ssh/
+  for x in "$HOME" /root; do
+    mkdir -p $x/.ssh
+    echo "$SSH_PRIVATE_KEY" > $x/.ssh/id_rsa
+    if [[ ! -z "$SSH_CONFIG" ]]; then
+      echo "$SSH_CONFIG" >> $x/.ssh/config
+    fi
+    chmod 600 $x/.ssh/{id_rsa,config}
+    ls -lrt $x/.ssh/
+  done
   echo "SSH config setting done."
 fi
 
@@ -47,5 +51,11 @@ if [[ ! -z "$OSS_EP" ]]; then
   echo "OSS config setting done."
 fi
 
-# for tools
-cp -rf $GITHUB_WORKSPACE/tools/* /usr/bin && echo "Local update exec files done."
+# for gradle
+if [[ ! -z "$GRADLE_VERSION" ]]; then
+  for x in "$HOME" /root; do
+    mkdir -p $x/.gradle
+    cp $GITHUB_WORKSPACE/products/$PNAME/gradle/* $x/.gradle
+  done
+  echo "Gradle config setting done."
+fi

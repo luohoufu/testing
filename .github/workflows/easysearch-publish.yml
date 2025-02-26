@@ -78,11 +78,6 @@ jobs:
           ln -s $HOME/gradle-$GRADLE_VERSION/bin/gradle /bin/gradle
           echo Gradle path is $HOME/gradle-$GRADLE_VERSION
           echo "PATH=$HOME/gradle-$GRADLE_VERSION/bin:$PATH" >> $GITHUB_ENV
-          # init gradle
-          mkdir -p $HOME/.gradle && mkdir -p /root/.gradle
-          cp $GITHUB_WORKSPACE/products/$PNAME/gradle/* $HOME/.gradle
-          cp $GITHUB_WORKSPACE/products/$PNAME/gradle/* /root/.gradle
-          ls -lrt $HOME/.m2/ && ls -lrt $HOME/.gradle/ && ls -lrt /root/.gradle/
 
       - name: Checkout ${{ env.PNAME }} repo
         run: |
