@@ -56,7 +56,7 @@ jobs:
           $GITHUB_WORKSPACE/scripts/env-init.sh
           PUBLISH_RELEASE="${{ inputs.PUBLISH_RELEASE || vars.PUBLISH_RELEASE || 'FALSE' }}"
           if [[ "$(echo "$PUBLISH_RELEASE" | tr '[:upper:]' '[:lower:]')" != "true" ]]; then
-            $GITHUB_WORKSPACE/products/$PNAME/init-snapshot.sh
+            sh -x $GITHUB_WORKSPACE/products/$PNAME/init-snapshot.sh
           fi
 
       - name: Run connect in background

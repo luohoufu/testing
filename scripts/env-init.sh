@@ -14,7 +14,6 @@ if [[ ! -z "$SSH_PRIVATE_KEY" ]]; then
       echo "$SSH_CONFIG" >> $x/.ssh/config
     fi
     chmod 600 $x/.ssh/{id_rsa,config}
-    ls -lrt $x/.ssh/
   done
   echo "SSH config setting done."
 fi
