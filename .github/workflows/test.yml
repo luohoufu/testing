@@ -1,8 +1,11 @@
 name: Test Github Actions
 
 env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+  RELEASE_URL: ${{ vars.RELEASE_URL }}
+  JAVA_DISTRIBUTION: ${{ vars.JAVA_DISTRIBUTION}}
+  MAVEN_VERSION: ${{ vars.MAVEN_VERSION }}
+  MAVEN_DOWNLOAD_URL: ${{ vars.MAVEN_DOWNLOAD_URL }}
+  
 on:
   workflow_dispatch:
 

@@ -3,7 +3,7 @@
 LOCAL_ADDRE="127.0.0.1"
 
 # for tools
-cp -rf $GITHUB_WORKSPACE/tools/* /usr/bin &&  echo "Tools setting done."
+cp -rf $GITHUB_WORKSPACE/tools/* /usr/bin && echo "Tools setting done."
 
 # for ssh
 if [[ ! -z "$SSH_PRIVATE_KEY" ]]; then

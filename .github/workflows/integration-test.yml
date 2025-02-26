@@ -1,7 +1,6 @@
 name: Products Integration Test
 
 env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GO_VERSION: ${{ vars.GO_VERSION }}
   NODEJS_VERSION: ${{ vars.NODEJS_VERSION }}
   JAVA_DISTRIBUTION: ${{ vars.JAVA_DISTRIBUTION }}
@@ -60,8 +59,6 @@ jobs:
             
             - name: Checkout current repository
               uses: actions/checkout@v4
-              with:
-                ref: main
 
             - name: Checkout console
               uses: actions/checkout@v4
