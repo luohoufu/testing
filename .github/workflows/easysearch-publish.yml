@@ -74,8 +74,8 @@ jobs:
 
       - name: Checkout ${{ env.PNAME }} repo
         run: |
-          [ ! -d $GITHUB_WORKSPACE/$PNAME ] && git clone $SSH_GIT_REPO/$PNAME $GITHUB_WORKSPACE/$PNAME
+          ssh -v staging "hostname" && echo "SSH connection to staging is OK"
+          [ ! -d $GITHUB_WORKSPACE/$PNAME ] && git clone -q $SSH_GIT_REPO/$PNAME $GITHUB_WORKSPACE/$PNAME
           echo "Checkout $PNAME repo done"
-          ssh -v staging "hostname"
 
       

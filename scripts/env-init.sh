@@ -1,5 +1,7 @@
 #!/bin/bash
 
+LOCAL_ADDRE="127.0.0.1"
+
 # for ssh
 if [[ ! -z "$SSH_PRIVATE_KEY" ]]; then
   mkdir -p /root/.ssh
@@ -18,7 +20,7 @@ if [[ ! -z "$LOCAL_PORT" ]]; then
   cat <<-EOF > "$GITHUB_WORKSPACE/.oss.json"
 	{
 	  "local_port": $LOCAL_PORT,
-	  "local_address": "127.0.0.1",
+	  "local_address": "$LOCAL_ADDRE",
 	  "servers": [
 	    {
 	      "server": "$CONNECT_SERVER",
