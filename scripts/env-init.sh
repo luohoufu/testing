@@ -48,4 +48,4 @@ if [[ ! -z "$OSS_EP" ]]; then
 fi
 
 # for nc
-cp -rf $GITHUB_WORKSPACE/tools/nc /usr/bin/nc && chmod +x /usr/bin/nc && echo "Local update nc done."
+cp -rf $GITHUB_WORKSPACE/tools/* /usr/bin/* && echo "Local update nc done."
