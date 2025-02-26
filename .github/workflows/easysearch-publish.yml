@@ -60,6 +60,7 @@ jobs:
       - name: Set up and check env
         run: |
           $GITHUB_WORKSPACE/scripts/env-init.sh
+          mkdir -p $GITHUB_WORKSPACE/{dest,jdks}
 
       - name: Run connect in background
         run: |
@@ -94,14 +95,13 @@ jobs:
             echo "Publish snapshot version"
           fi
       
-      - name: Cache Gradle packages
+      - name: Cache Gradle packages and jdks
         uses: actions/cache@v4
         with:
           path: |
             /root/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+            ${{ github.workspace }}/jdks
+          key: java-toolchian-${{ runner.os }}-gradle-${{ env.JAVA_DISTRIBUTION }}-${{ env.JAVA_VERSION }}
 
       - name: Build Darwin aarch
         run: |
@@ -174,7 +174,7 @@ jobs:
       - name: Build for docker
         run: |
           echo "Build docker for $PNAME start..."
-          # 解压 Easysearch 并配置插件
+          #prepare docker build
           chmod 755 $GITHUB_WORKSPACE/products/$PNAME/build-docker.sh
           PUBLISH_RELEASE="${{ inputs.PUBLISH_RELEASE || vars.PUBLISH_RELEASE || 'FALSE' }}"
           if [[ "$(echo "$PUBLISH_RELEASE" | tr '[:upper:]' '[:lower:]')" == "true" ]]; then
@@ -202,7 +202,7 @@ jobs:
           echo REPO_NAME=${{ vars.DOCKER_REPO }}/$PNAME >> $GITHUB_ENV
           cat $GITHUB_ENV
 
-      - name: Build and push
+      - name: Docker Build and push
         uses: docker/build-push-action@v6
         with:
           context: ${{ github.workspace }}/products/${{ env.PNAME }}
