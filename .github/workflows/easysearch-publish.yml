@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     container:      
       image: gitea/runner-images:ubuntu-latest
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.PUBLISH_RELEASE == 'true' }}
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.PUBLISH_RELEASE == true }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -76,5 +76,6 @@ jobs:
         run: |
           [ ! -d $GITHUB_WORKSPACE/$PNAME ] && git clone $SSH_GIT_REPO/$PNAME $GITHUB_WORKSPACE/$PNAME
           echo "Checkout $PNAME repo done"
+          ssh -v staging "hostname"
 
       
