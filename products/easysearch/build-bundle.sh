@@ -14,7 +14,7 @@ for x in linux_x64 linux_aarch64 macosx_x64 macosx_aarch64 win_x64; do
     wget -q -nc --show-progress --progress=bar:force:noscroll https://cdn.azul.com/zulu/bin/$ZULU_JAVA_VERSION-$x.tar.gz -P $BUILD_JDKS
   fi
 done
-ls -alrt $BUILD_JDKS
+ls -lrt $BUILD_JDKS
 
 #初始化操作目录
 mkdir -p $WORK && cd $_
