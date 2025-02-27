@@ -119,10 +119,11 @@ jobs:
           git config user.email github-actions@github.com
           git checkout -b "$PR_BRANCH"
           #update release notes
+          PUBLISH="$(echo "$VERSION" | sed 's/-.*//') ($(date +'%Y-%m-%d'))"
           for f in en zh; do
-            sed -i "s/## Latest.*/## $(echo "$VERSION" | sed 's/-.*//') ($(date +'%Y-%m-%d'))/" docs/content.$f/docs/release-notes/_index.md
+            sed -i "s/## Latest.*/## $PUBLISH/" docs/content.$f/docs/release-notes/_index.md
             if [[ "${{ inputs.NEXT_PUBLISH }}" == "true" ]]; then
-              sed -i '/^## '"$(echo "${{ inputs.PUBLISH_VERSION }}" | sed 's/-.*//')"'\ ('"$(date +'%Y-%m-%d')"'\)$/i \
+              sed -i "/^## $PUBLISH/i \
                 ## Latest (In development)\
                 \
                 ### Breaking changes\
@@ -132,7 +133,7 @@ jobs:
                 ### Bug fix\
                 \
                 ### Improvements\
-                \' docs/content.$f/docs/release-notes/_index.md
+                \" docs/content.$f/docs/release-notes/_index.md
             fi
             git add docs/content.$f/docs/release-notes/_index.md
           done
