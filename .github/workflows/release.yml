@@ -88,10 +88,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up and check env
+      - name: Set up and check env for ${{ matrix.product }}
         run: |
           $GITHUB_WORKSPACE/scripts/env-init.sh
-          echo "VERSION=${{ env.PUBLISH_VERSION }}" >> $GITHUB_ENV
+          if [[ "${{ matrix.product }}" == "framework" ]]; then
+            VERSION=${{ inputs.PUBLISH_FRAMEWORK_VERSION }}
+            if [[ -z "$VERSION" ]]; then
+              echo "Please input the framework version"
+              exit 1
+            fi
+            echo "VERSION=${{ inputs.PUBLISH_FRAMEWORK_VERSION }}" >> $GITHUB_ENV
+          else
+            echo "VERSION=${{ env.PUBLISH_VERSION }}" >> $GITHUB_ENV  
+          fi
+          
           if [[ "${{ inputs.NEXT_PUBLISH }}" == "true" ]]; then
             echo "PR_BRANCH=release_for_next" >> $GITHUB_ENV
             echo "PR_MESSAGE=chore: update release notes template for next publish" >> $GITHUB_ENV
@@ -106,13 +116,6 @@ jobs:
 
       - name: Create Branch for ${{ matrix.product }}
         run: |
-          if [[ "${{ matrix.product }}" == "framework" ]]; then
-            VERSION=${{ inputs.PUBLISH_FRAMEWORK_VERSION }}
-            if [[ -z "$VERSION" ]]; then
-              echo "Please input the framework version"
-              exit 1
-            fi
-          fi
           cd $GITHUB_WORKSPACE/${{ matrix.product }}
           echo "Create Branch $PR_BRANCH for ${{ matrix.product }}"
           git config user.name github-actions
@@ -133,13 +136,6 @@ jobs:
 
       - name: Create Commit Message for ${{ matrix.product }}
         run: |
-          if [[ "${{ matrix.product }}" == "framework" ]]; then
-            VERSION=${{ inputs.PUBLISH_FRAMEWORK_VERSION }}
-            if [[ -z "$VERSION" ]]; then
-              echo "Please input the framework version"
-              exit 1
-            fi
-          fi
           cd $GITHUB_WORKSPACE/${{ matrix.product }}
           git commit -m "$PR_MESSAGE"     
           git push origin "$PR_BRANCH"
@@ -148,13 +144,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.REPO_PAT }} 
         run: |
-          if [[ "${{ matrix.product }}" == "framework" ]]; then
-            VERSION=${{ inputs.PUBLISH_FRAMEWORK_VERSION }}
-            if [[ -z "$VERSION" ]]; then
-              echo "Please input the framework version"
-              exit 1
-            fi
-          fi
           cd $GITHUB_WORKSPACE/${{ matrix.product }}
           gh pr create --title "$PR_MESSAGE" \
                   --body "This PR updates the release notes." \
