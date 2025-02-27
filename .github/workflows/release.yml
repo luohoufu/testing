@@ -46,7 +46,7 @@ on:
         required: false
         type: boolean
         default: true
-      FRAMEWORk_PUBLISH:
+      FRAMEWORK_PUBLISH:
         description: 'Framework'
         required: false
         type: boolean
@@ -68,7 +68,7 @@ jobs:
             CONSOLE_PUBLISH: ${{ inputs.CONSOLE_PUBLISH }}
             GATEWAY_PUBLISH: ${{ inputs.GATEWAY_PUBLISH }}
             LOADGEN_PUBLISH: ${{ inputs.LOADGEN_PUBLISH }}
-            FRAMEWORk_PUBLISH: ${{ inputs.FRAMEWORk_PUBLISH }}
+            FRAMEWORK_PUBLISH: ${{ inputs.FRAMEWORk_PUBLISH }}
         run: |
           matrix=$($GITHUB_WORKSPACE/scripts/go-matrix.sh)
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
