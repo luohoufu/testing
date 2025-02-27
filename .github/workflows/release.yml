@@ -46,13 +46,11 @@ jobs:
       - name: Generate matrix
         id: gen-matrix
         run: |
-          matrix=$($GITHUB_WORKSPACE/scripts/go-matrix.sh \
-            AGENT_PUBLISH="${{ inputs.AGENT_PUBLISH }}" \
-            CONSOLE_PUBLISH="${{ inputs.CONSOLE_PUBLISH }}" \
-            GATEWAY_PUBLISH="${{ inputs.GATEWAY_PUBLISH }}" \
-            LOADGEN_PUBLISH="${{ inputs.LOADGEN_PUBLISH }}" \
-            GITHUB_EVENT_NAME="$GITHUB_EVENT_NAME"
-          )
+          export AGENT_PUBLISH="${{ inputs.AGENT_PUBLISH }}"
+          export CONSOLE_PUBLISH="${{ inputs.CONSOLE_PUBLISH }}"
+          export GATEWAY_PUBLISH="${{ inputs.GATEWAY_PUBLISH }}"
+          export LOADGEN_PUBLISH="${{ inputs.LOADGEN_PUBLISH }}"
+          matrix=$($GITHUB_WORKSPACE/scripts/go-matrix.sh)
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
           cat "$GITHUB_OUTPUT"
 
