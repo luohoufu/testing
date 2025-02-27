@@ -123,17 +123,7 @@ jobs:
           for f in en zh; do
             sed -i "s/## Latest.*/## $PUBLISH/" docs/content.$f/docs/release-notes/_index.md
             if [[ "${{ inputs.NEXT_PUBLISH }}" == "true" ]]; then
-              sed -i "/^## $PUBLISH/i \
-                ## Latest (In development)\
-                \
-                ### Breaking changes\
-                \
-                ### Features\
-                \
-                ### Bug fix\
-                \
-                ### Improvements\
-                \" docs/content.$f/docs/release-notes/_index.md
+              sed -i -e "/^## $PUBLISH/i ## Latest (In development)  \\n### Breaking changes  \\n### Features  \\n### Bug fix  \\n### Improvements  \\n" docs/content.$f/docs/release-notes/_index.md
             fi
             git add docs/content.$f/docs/release-notes/_index.md
           done
