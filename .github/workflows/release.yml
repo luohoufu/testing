@@ -69,14 +69,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-    
-      - name: Checkout ${{ matrix.product }} code
-        run: |
-          GIT_SSH_COMMAND="ssh -vvv" git clone git@github.com:${{ vars.GIT_REPO }}/${{ matrix.product }} $GITHUB_WORKSPACE/${{ matrix.product }}
 
       - name: Set up and check env
         run: |
           $GITHUB_WORKSPACE/scripts/env-init.sh
+
+      - name: Checkout ${{ matrix.product }} code
+        run: |
+          GIT_SSH_COMMAND="ssh -vvv" git clone git@github.com:${{ vars.GIT_REPO }}/${{ matrix.product }} $GITHUB_WORKSPACE/${{ matrix.product }}
 
       - name: Create Branch for ${{ matrix.product }}
         run: |
