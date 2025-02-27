@@ -76,6 +76,10 @@ jobs:
           repository: ${{ vars.GIT_REPO }}/${{ matrix.product }}
           ref: main
           path: ${{ matrix.product }}
+          
+      - name: Set up and check env
+        run: |
+          $GITHUB_WORKSPACE/scripts/env-init.sh
 
       - name: Create Branch for ${{ matrix.product }}
         run: |
