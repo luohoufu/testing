@@ -43,6 +43,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        
       - name: Generate matrix
         id: gen-matrix
         env:
@@ -76,27 +77,25 @@ jobs:
 
       - name: Create Branch for ${{ matrix.product }}
         run: |
-          if [[ -n "${{ inputs.PUBLISH_VERSION }}" ]]; then
-            echo "PUBLISH_VERSION=${{ inputs.PUBLISH_VERSION }}" >> $GITHUB_ENV
-          else
-            echo "PUBLISH_VERSION=${{ vars.PUBLISH_VERSION }}" >> $GITHUB_ENV
-          fi
-          echo "Create Branch release_$PUBLISH_VERSION_pr"
+          VERSION=${{ env.PUBLISH_VERSION }}
+          echo "Create Branch release_$VERSION"
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git checkout -b "release_$PUBLISH_VERSION_pr"
+          git checkout -b "release_$VERSION"
           #update release notes
           for f in en zh; do
-            sed -i "s/## Latest.*/## $(echo "$PUBLISH_VERSION" | sed 's/-.*//') ($(date +'%Y-%m-%d'))/" docs/content.$f/docs/release-notes/_index.md
+            sed -i "s/## Latest.*/## $(echo "$VERSION" | sed 's/-.*//') ($(date +'%Y-%m-%d'))/" docs/content.$f/docs/release-notes/_index.md
           done
 
       - name: Create Commit Message for ${{ matrix.product }}
         run: |
-          git commit -m "chore: update release notes for publish $PUBLISH_VERSION"
-          git push origin "release_$PUBLISH_VERSION_pr"
+          VERSION=${{ env.PUBLISH_VERSION }}
+          git commit -m "chore: update release notes for publish $VERSION"
+          git push origin "release_$VERSION"
 
       - name: Create Github Pull Request for ${{ matrix.product }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr create --title "chore: update release notes for publish $PUBLISH_VERSION"
+          VERSION=${{ env.PUBLISH_VERSION }}
+          gh pr create --title "chore: update release notes for publish $VERSION"
