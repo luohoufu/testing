@@ -45,13 +45,14 @@ jobs:
         uses: actions/checkout@v4
       - name: Generate matrix
         id: gen-matrix
-        env:
-            AGENT_PUBLISH: "${{ inputs.AGENT_PUBLISH }}"
-            CONSOLE_PUBLISH: "${{ inputs.CONSOLE_PUBLISH }}"
-            GATEWAY_PUBLISH: "${{ inputs.GATEWAY_PUBLISH }}"
-            LOADGEN_PUBLISH: "${{ inputs.LOADGEN_PUBLISH }}"
         run: |
-          matrix=$($GITHUB_WORKSPACE/scripts/go-matrix.sh)
+          matrix=$($GITHUB_WORKSPACE/scripts/go-matrix.sh \
+            AGENT_PUBLISH="${{ inputs.AGENT_PUBLISH }}" \
+            CONSOLE_PUBLISH="${{ inputs.CONSOLE_PUBLISH }}" \
+            GATEWAY_PUBLISH="${{ inputs.GATEWAY_PUBLISH }}" \
+            LOADGEN_PUBLISH="${{ inputs.LOADGEN_PUBLISH }}" \
+            GITHUB_EVENT_NAME="$GITHUB_EVENT_NAME"
+          )
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
           cat "$GITHUB_OUTPUT"
 
@@ -76,6 +77,11 @@ jobs:
 
       - name: Create Branch for ${{ matrix.product }}
         run: |
+          if [[ -n "${{ inputs.PUBLISH_VERSION }}" ]]; then
+            echo "PUBLISH_VERSION=${{ inputs.PUBLISH_VERSION }}" >> $GITHUB_ENV
+          else
+            echo "PUBLISH_VERSION=${{ vars.PUBLISH_VERSION }}" >> $GITHUB_ENV
+          fi
           echo "Create Branch release_$PUBLISH_VERSION_pr"
           git config user.name github-actions
           git config user.email github-actions@github.com

@@ -2,17 +2,16 @@
 
 matrix_includes=()
 
-if [[ "${AGENT_PUBLSH}" == "true" ]]; then
+if [[ "${AGENT_PUBLISH}" == "true" ]]; then
   matrix_includes+=('{"product": "agent"}')
-  exit 1
 fi
-if [[ "${CONSOLE_PUBLSH}" == "true" ]]; then
+if [[ "${CONSOLE_PUBLISH}" == "true" ]]; then
    matrix_includes+=('{"product": "console"}')
 fi
-if [[ "${GATEWAY_PUBLSH}" == "true" ]]; then
+if [[ "${GATEWAY_PUBLISH}" == "true" ]]; then
   matrix_includes+=('{"product": "gateway"}')
 fi
-if [[ "${LOADGEN_PUBLSH}" == "true" ]]; then
+if [[ "${LOADGEN_PUBLISH}" == "true" ]]; then
   matrix_includes+=('{"product": "loadgen"}')
 fi
 
