@@ -4,16 +4,16 @@ matrix_includes=()
 
 # if not triggered by workflow_dispatch, include all products
 if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
-  if [[ -n "$AGENT_PUBLISH" ]]; then
+  if [[ "$AGENT_PUBLISH" == "true" ]]; then
     matrix_includes+=('{"product": "agent"}')
   fi
-  if [[ -n "$CONSOLE_PUBLISH" ]]; then
+  if [[ "$CONSOLE_PUBLISH" == "true" ]]; then
     matrix_includes+=('{"product": "console"}')
   fi
-  if [[ -n "$GATEWAY_PUBLISH" ]]; then
+  if [[ "$GATEWAY_PUBLISH" == "true" ]]; then
     matrix_includes+=('{"product": "gateway"}')
   fi
-  if [[ -n "$LOADGEN_PUBLISH" ]]; then
+  if [[ "$LOADGEN_PUBLISH" == "true" ]]; then
     matrix_includes+=('{"product": "loadgen"}')
   fi
 else
