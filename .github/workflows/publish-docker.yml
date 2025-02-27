@@ -48,7 +48,7 @@ jobs:
     outputs:
       matrix: ${{ steps.gen-matrix.outputs.matrix }}
     steps:
-      - name: Checkout code # 检出代码以访问脚本
+      - name: Checkout code
         uses: actions/checkout@v4
       - name: Generate matrix
         id: gen-matrix

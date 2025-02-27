@@ -1,0 +1,99 @@
+name: Products Files & Docker Publish 
+defaults:
+  run:
+    shell: bash
+env:
+  GO_VERSION: ${{ vars.GO_VERSION }}
+  NODEJS_VERSION: ${{ vars.NODEJS_VERSION }}
+  PUBLISH_VERSION: ${{ inputs.PUBLISH_VERSION || vars.PUBLISH_VERSION }}
+  
+on:
+  schedule:
+    - cron: '15 17 * * *'  
+  workflow_dispatch:
+    inputs:
+      PUBLISH_VERSION:
+        description: 'Publish Version'
+        required: false
+        default: ""        
+      AGENT_PUBLISH:
+        description: 'Agent'
+        required: false
+        type: boolean
+        default: true
+      CONSOLE_PUBLISH:
+        description: 'Console'
+        required: false
+        type: boolean
+        default: true
+      GATEWAY_PUBLISH:
+        description: 'Gateway'
+        required: false
+        type: boolean
+        default: true
+      LOADGEN_PUBLISH:
+        description: 'Loadgen'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  generate-matrix: # 新增作业
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.gen-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Generate matrix
+        id: gen-matrix
+        run: |
+          matrix=$($GITHUB_WORKSPACE/scripts/go-matrix.sh \
+            AGENT_PUBLISH="${{ inputs.AGENT_PUBLISH }}" \
+            CONSOLE_PUBLISH="${{ inputs.CONSOLE_PUBLISH }}" \
+            GATEWAY_PUBLISH="${{ inputs.GATEWAY_PUBLISH }}" \
+            LOADGEN_PUBLISH="${{ inputs.LOADGEN_PUBLISH }}" \
+            GITHUB_EVENT_NAME="$GITHUB_EVENT_NAME"
+          )
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          cat "$GITHUB_OUTPUT"
+
+  publish:
+    needs: generate-matrix
+    name: Publish ${{ matrix.product }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+    
+      - name: Checkout ${{ matrix.product }} code
+        uses: actions/checkout@v4
+        with: 
+          repository: ${{ vars.GIT_REPO }}/${{ matrix.product }}
+          ref: main
+          path: ${{ matrix.product }}
+
+      - name: Create Branch for ${{ matrix.product }}
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git checkout -b "release_$PUBLISH_VERSION_pr"
+          #update release notes
+          for f in en zh; do
+            sed -i "s/## Latest.*/## $(echo "$PUBLISH_VERSION" | sed 's/-.*//') ($(date +'%Y-%m-%d'))/" docs/content.$f/docs/release-notes/_index.md
+          done
+
+      - name: Create Commit Message for ${{ matrix.product }}
+        run: |
+          git commit -m "chore: update release notes for publish $PUBLISH_VERSION"
+          git push origin "release_$PUBLISH_VERSION_pr"
+
+      - name: Create Github Pull Request for ${{ matrix.product }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create --title "chore: update release notes for publish $PUBLISH_VERSION"
