@@ -7,7 +7,7 @@ sudo cp -rf $GITHUB_WORKSPACE/tools/* /usr/bin && echo "Tools setting done."
 
 # for ssh
 if [[ ! -z "$SSH_PRIVATE_KEY" ]]; then
-  for x in "$HOME" /root; do
+  for x in "$HOME"; do
     mkdir -p $x/.ssh
     echo "$SSH_PRIVATE_KEY" > $x/.ssh/id_rsa
     if [[ ! -z "$SSH_CONFIG" ]]; then
@@ -53,7 +53,7 @@ fi
 
 # for gradle
 if [[ ! -z "$GRADLE_VERSION" ]]; then
-  for x in "$HOME" /root; do
+  for x in "$HOME"; do
     mkdir -p $x/.gradle
     cp $GITHUB_WORKSPACE/products/$PNAME/gradle/* $x/.gradle
   done

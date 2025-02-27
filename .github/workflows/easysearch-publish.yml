@@ -99,7 +99,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            /root/.gradle/caches
+            ~/.gradle/caches
             ${{ github.workspace }}/jdks
           key: java-toolchian-${{ runner.os }}-gradle-${{ env.JAVA_DISTRIBUTION }}-${{ env.JAVA_VERSION }}
 
