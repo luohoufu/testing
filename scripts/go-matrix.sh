@@ -2,18 +2,16 @@
 
 matrix_includes=()
 
-echo "$GITHUB_EVENT_NAME" "$AGENT_PUBLSH" "$CONSOLE_PUBLSH" "$GATEWAY_PUBLSH" "$LOADGEN_PUBLSH"
-
-if [[ "${AGENT_PUBLSH:-true}" == "true" ]]; then
+if [[ -n "$AGENT_PUBLISH" ]]; then
   matrix_includes+=('{"product": "agent"}')
 fi
-if [[ "${CONSOLE_PUBLSH:-true}" == "true" ]]; then
-   matrix_includes+=('{"product": "console"}')
+if [[ -n "$CONSOLE_PUBLISH" ]]; then
+  matrix_includes+=('{"product": "console"}')
 fi
-if [[ "${GATEWAY_PUBLSH:-true}" == "true" ]]; then
+if [[ -n "$GATEWAY_PUBLISH" ]]; then
   matrix_includes+=('{"product": "gateway"}')
 fi
-if [[ "${LOADGEN_PUBLSH:-true}" == "true" ]]; then
+if [[ -n "$LOADGEN_PUBLISH" ]]; then
   matrix_includes+=('{"product": "loadgen"}')
 fi
 
