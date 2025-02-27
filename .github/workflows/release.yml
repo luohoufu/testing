@@ -46,11 +46,13 @@ jobs:
       - name: Generate matrix
         id: gen-matrix
         run: |
-          export AGENT_PUBLISH="${{ inputs.AGENT_PUBLISH }}"
-          export CONSOLE_PUBLISH="${{ inputs.CONSOLE_PUBLISH }}"
-          export GATEWAY_PUBLISH="${{ inputs.GATEWAY_PUBLISH }}"
-          export LOADGEN_PUBLISH="${{ inputs.LOADGEN_PUBLISH }}"
-          matrix=$($GITHUB_WORKSPACE/scripts/go-matrix.sh)
+          matrix=$($GITHUB_WORKSPACE/scripts/go-matrix.sh \
+            AGENT_PUBLISH="${{ inputs.AGENT_PUBLISH }}" \
+            CONSOLE_PUBLISH="${{ inputs.CONSOLE_PUBLISH }}" \
+            GATEWAY_PUBLISH="${{ inputs.GATEWAY_PUBLISH }}" \
+            LOADGEN_PUBLISH="${{ inputs.LOADGEN_PUBLISH }}" \
+            GITHUB_EVENT_NAME="$GITHUB_EVENT_NAME"
+          )
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
           cat "$GITHUB_OUTPUT"
 
@@ -77,7 +79,6 @@ jobs:
         run: |
           if [ -z "$PUBLISH_VERSION" ]; then
             PUBLISH_VERSION=${{ vars.PUBLISH_VERSION }}
-            echo "PUBLISH_VERSION=$PUBLISH_VERSION" >> $GITHUB_ENV
           fi
           git config user.name github-actions
           git config user.email github-actions@github.com

@@ -16,7 +16,7 @@ if [[ "${LOADGEN_PUBLSH}" == "true" ]]; then
 fi
 
 # if not triggered by workflow_dispatch, include all products
-if [[ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]]; then
+if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
    matrix_includes=()
    matrix_includes+=('{"product": "agent"}')
    matrix_includes+=('{"product": "console"}')
