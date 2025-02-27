@@ -76,9 +76,7 @@ jobs:
 
       - name: Create Branch for ${{ matrix.product }}
         run: |
-          if [ -z "$PUBLISH_VERSION" ]; then
-            PUBLISH_VERSION=${{ vars.PUBLISH_VERSION }}
-          fi
+          echo "Create Branch release_$PUBLISH_VERSION_pr"
           git config user.name github-actions
           git config user.email github-actions@github.com
           git checkout -b "release_$PUBLISH_VERSION_pr"
