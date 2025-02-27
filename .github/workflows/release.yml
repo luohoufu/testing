@@ -13,6 +13,11 @@ on:
     - cron: '15 17 * * *'  
   workflow_dispatch:
     inputs:
+      NEXT_PUBLISH:
+        description: 'Next Publish (Template Release Notes)'
+        required: false
+        type: boolean
+        default: false        
       PUBLISH_VERSION:
         description: 'Publish Version'
         required: false
@@ -109,6 +114,19 @@ jobs:
           #update release notes
           for f in en zh; do
             sed -i "s/## Latest.*/## $(echo "$VERSION" | sed 's/-.*//') ($(date +'%Y-%m-%d'))/" docs/content.$f/docs/release-notes/_index.md
+            if [[ "${{ inputs.NEXT_PUBLISH }}" == "true" ]]; then
+              sed -i '/^## '"$(echo "${{ inputs.PUBLISH_VERSION }}" | sed 's/-.*//')"'\ ('"$(date +'%Y-%m-%d')"'\)$/i \
+                ## Latest (In development)\
+                \
+                ### Breaking changes\
+                \
+                ### Features\
+                \
+                ### Bug fix\
+                \
+                ### Improvements\
+                \' docs/content.$f/docs/release-notes/_index.md
+            fi
             git add docs/content.$f/docs/release-notes/_index.md
           done
 
