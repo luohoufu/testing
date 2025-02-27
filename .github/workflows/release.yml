@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
     inputs:
       NEXT_PUBLISH:
-        description: 'Next Publish (Template Release Notes)'
+        description: 'Next Template Release Notes'
         required: false
         type: boolean
         default: false        
@@ -47,7 +47,7 @@ on:
         type: boolean
         default: true
       FRAMEWORk_PUBLISH:
-        description: 'Loadgen'
+        description: 'Framework'
         required: false
         type: boolean
         default: true
