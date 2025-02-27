@@ -14,7 +14,7 @@ fi
 if [[ "${LOADGEN_PUBLISH}" == "true" ]]; then
   matrix_includes+=('{"product": "loadgen"}')
 fi
-if [[ "${FRAMEWORK_PUBLISH}" == "true" ]]; then
+if [[ "${FRAMEWORk_PUBLISH}" == "true" ]]; then
   matrix_includes+=('{"product": "framework"}')
 fi
 
