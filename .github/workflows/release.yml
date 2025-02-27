@@ -86,6 +86,7 @@ jobs:
           #update release notes
           for f in en zh; do
             sed -i "s/## Latest.*/## $(echo "$VERSION" | sed 's/-.*//') ($(date +'%Y-%m-%d'))/" docs/content.$f/docs/release-notes/_index.md
+            git add docs/content.$f/docs/release-notes/_index.md
           done
 
       - name: Create Commit Message for ${{ matrix.product }}
