@@ -2,6 +2,8 @@
 
 matrix_includes=()
 
+echo "$GITHUB_EVENT_NAME" "$AGENT_PUBLSH" "$CONSOLE_PUBLSH" "$GATEWAY_PUBLSH" "$LOADGEN_PUBLSH"
+
 if [[ "${AGENT_PUBLSH:-true}" == "true" ]]; then
   matrix_includes+=('{"product": "agent"}')
 fi
