@@ -36,7 +36,7 @@ on:
         default: true
 
 jobs:
-  generate-matrix: # 新增作业
+  generate-matrix: 
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.gen-matrix.outputs.matrix }}
@@ -60,6 +60,8 @@ jobs:
     needs: generate-matrix
     name: Create ${{ matrix.product }} PR
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     strategy:
       fail-fast: false
       matrix:
