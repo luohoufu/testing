@@ -18,9 +18,16 @@ if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
   fi
 else
   matrix_includes+=('{"product": "agent"}')
-   matrix_includes+=('{"product": "console"}')
-   matrix_includes+=('{"product": "gateway"}')
-   matrix_includes+=('{"product": "loadgen"}')
+  matrix_includes+=('{"product": "console"}')
+  matrix_includes+=('{"product": "gateway"}')
+  matrix_includes+=('{"product": "loadgen"}')
 fi
 
-echo "[$(IFS=,; echo "${matrix_includes[*]}")]"
+# 使用 jq 生成有效的 JSON 输出
+if [[ ${#matrix_includes[@]} -gt 0 ]]; then
+  jq -n --compact-output --argjson includes "[${matrix_includes[@]}]" '$includes'
+else
+  echo '[]'  # 如果数组为空，则输出空 JSON 数组
+fi
+
+exit 0
