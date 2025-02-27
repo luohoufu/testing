@@ -16,7 +16,11 @@ on:
       PUBLISH_VERSION:
         description: 'Publish Version'
         required: false
-        default: ""        
+        default: ""
+      PUBLISH_FRAMEWORK_VERSION:
+        description: 'Publish Framework Version'
+        required: false
+        default: "" 
       AGENT_PUBLISH:
         description: 'Agent'
         required: false
@@ -33,6 +37,11 @@ on:
         type: boolean
         default: true
       LOADGEN_PUBLISH:
+        description: 'Loadgen'
+        required: false
+        type: boolean
+        default: true
+      FRAMEWORk_PUBLISH:
         description: 'Loadgen'
         required: false
         type: boolean
@@ -54,6 +63,7 @@ jobs:
             CONSOLE_PUBLISH: ${{ inputs.CONSOLE_PUBLISH }}
             GATEWAY_PUBLISH: ${{ inputs.GATEWAY_PUBLISH }}
             LOADGEN_PUBLISH: ${{ inputs.LOADGEN_PUBLISH }}
+            FRAMEWORk_PUBLISH: ${{ inputs.FRAMEWORk_PUBLISH }}
         run: |
           matrix=$($GITHUB_WORKSPACE/scripts/go-matrix.sh)
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
@@ -79,11 +89,18 @@ jobs:
 
       - name: Checkout ${{ matrix.product }} code
         run: |
-          GIT_SSH_COMMAND="ssh -vvv" git clone git@github.com:${{ vars.GIT_REPO }}/${{ matrix.product }} $GITHUB_WORKSPACE/${{ matrix.product }}
+          git clone ${{ vars.GIT_SSH_REPO }}/${{ matrix.product }} $GITHUB_WORKSPACE/${{ matrix.product }}
 
       - name: Create Branch for ${{ matrix.product }}
         run: |
           VERSION=${{ env.PUBLISH_VERSION }}
+          if [[ "${{ matrix.product }}" == "framework" ]]; then
+            VERSION=${{ inputs.PUBLISH_FRAMEWORK_VERSION }}
+            if [[ -z "$VERSION" ]]; then
+              echo "Please input the framework version"
+              exit 1
+            fi
+          fi
           cd $GITHUB_WORKSPACE/${{ matrix.product }}
           echo "Create Branch release_$VERSION"
           git config user.name github-actions
@@ -100,6 +117,13 @@ jobs:
           GH_TOKEN: ${{ secrets.REPO_PAT }} 
         run: |
           VERSION=${{ env.PUBLISH_VERSION }}
+          if [[ "${{ matrix.product }}" == "framework" ]]; then
+            VERSION=${{ inputs.PUBLISH_FRAMEWORK_VERSION }}
+            if [[ -z "$VERSION" ]]; then
+              echo "Please input the framework version"
+              exit 1
+            fi
+          fi
           cd $GITHUB_WORKSPACE/${{ matrix.product }}
           git remote set-url origin git@github.com:${{ vars.GIT_REPO }}/${{ matrix.product }}.git
           git commit -m "chore: update release notes for publish $VERSION"
@@ -110,6 +134,13 @@ jobs:
           GH_TOKEN: ${{ secrets.REPO_PAT }} 
         run: |
           VERSION=${{ env.PUBLISH_VERSION }}
+          if [[ "${{ matrix.product }}" == "framework" ]]; then
+            VERSION=${{ inputs.PUBLISH_FRAMEWORK_VERSION }}
+            if [[ -z "$VERSION" ]]; then
+              echo "Please input the framework version"
+              exit 1
+            fi
+          fi
           cd $GITHUB_WORKSPACE/${{ matrix.product }}
           gh pr create --title "chore: update release notes for publish $VERSION" \
                   --body "This PR updates the release notes." \

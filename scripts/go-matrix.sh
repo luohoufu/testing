@@ -14,6 +14,9 @@ fi
 if [[ "${LOADGEN_PUBLISH}" == "true" ]]; then
   matrix_includes+=('{"product": "loadgen"}')
 fi
+if [[ "${FRAMEWORK_PUBLISH}" == "true" ]]; then
+  matrix_includes+=('{"product": "framework"}')
+fi
 
 # if not triggered by workflow_dispatch, include all products
 if [[ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]]; then
