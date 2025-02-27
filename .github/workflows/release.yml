@@ -121,6 +121,9 @@ jobs:
           #update release notes
           PUBLISH="$(echo "$VERSION" | sed 's/-.*//') ($(date +'%Y-%m-%d'))"
           for f in en zh; do
+            if [[ "${{ matrix.product }}" == "framework" ]] && [[ "$f" == "zh" ]]; then
+              continue
+            fi
             sed -i "s/## Latest.*/## $PUBLISH/" docs/content.$f/docs/release-notes/_index.md
             if [[ "${{ inputs.NEXT_PUBLISH }}" == "true" ]]; then
               sed -i -e "/^## $PUBLISH/i ## Latest (In development)  \\n### Breaking changes  \\n### Features  \\n### Bug fix  \\n### Improvements  \\n" docs/content.$f/docs/release-notes/_index.md
