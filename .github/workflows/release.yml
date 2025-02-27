@@ -92,6 +92,8 @@ jobs:
           done
 
       - name: Create Commit Message for ${{ matrix.product }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION=${{ env.PUBLISH_VERSION }}
           cd $GITHUB_WORKSPACE/${{ matrix.product }}
