@@ -71,12 +71,9 @@ jobs:
         uses: actions/checkout@v4
     
       - name: Checkout ${{ matrix.product }} code
-        uses: actions/checkout@v4
-        with: 
-          repository: ${{ vars.GIT_REPO }}/${{ matrix.product }}
-          ref: main
-          path: ${{ matrix.product }}
-          
+        run: |
+          GIT_SSH_COMMAND="ssh -vvv" git clone git@github.com:${{ vars.GIT_REPO }}/${{ matrix.product }} $GITHUB_WORKSPACE/${{ matrix.product }}
+
       - name: Set up and check env
         run: |
           $GITHUB_WORKSPACE/scripts/env-init.sh
