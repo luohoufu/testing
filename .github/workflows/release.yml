@@ -78,6 +78,7 @@ jobs:
       - name: Create Branch for ${{ matrix.product }}
         run: |
           VERSION=${{ env.PUBLISH_VERSION }}
+          cd $GITHUB_WORKSPACE/${{ matrix.product }}
           echo "Create Branch release_$VERSION"
           git config user.name github-actions
           git config user.email github-actions@github.com
@@ -90,6 +91,7 @@ jobs:
       - name: Create Commit Message for ${{ matrix.product }}
         run: |
           VERSION=${{ env.PUBLISH_VERSION }}
+          cd $GITHUB_WORKSPACE/${{ matrix.product }}
           git commit -m "chore: update release notes for publish $VERSION"
           git push origin "release_$VERSION"
 
@@ -98,4 +100,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION=${{ env.PUBLISH_VERSION }}
+          cd $GITHUB_WORKSPACE/${{ matrix.product }}
           gh pr create --title "chore: update release notes for publish $VERSION"
