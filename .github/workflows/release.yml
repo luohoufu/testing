@@ -1,10 +1,8 @@
-name: Products Files & Docker Publish 
+name: Products Release Notes PR
 defaults:
   run:
     shell: bash
 env:
-  GO_VERSION: ${{ vars.GO_VERSION }}
-  NODEJS_VERSION: ${{ vars.NODEJS_VERSION }}
   PUBLISH_VERSION: ${{ inputs.PUBLISH_VERSION || vars.PUBLISH_VERSION }}
   
 on:
@@ -60,7 +58,7 @@ jobs:
 
   publish:
     needs: generate-matrix
-    name: Publish ${{ matrix.product }}
+    name: Create ${{ matrix.product }} PR
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
