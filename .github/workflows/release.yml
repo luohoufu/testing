@@ -94,8 +94,10 @@ jobs:
           echo "VERSION=${{ env.PUBLISH_VERSION }}" >> $GITHUB_ENV
           if [[ "${{ inputs.NEXT_PUBLISH }}" == "true" ]]; then
             echo "PR_BRANCH=release_for_next" >> $GITHUB_ENV
+            echo "PR_MESSAGE=chore: update release notes template for next publish" >> $GITHUB_ENV
           else
             echo "PR_BRANCH=release_${{ env.PUBLISH_VERSION }}" >> $GITHUB_ENV
+            echo "PR_MESSAGE=chore: update release notes for publish ${{ env.PUBLISH_VERSION }}" >> $GITHUB_ENV
           fi
 
       - name: Checkout ${{ matrix.product }} code
@@ -104,7 +106,6 @@ jobs:
 
       - name: Create Branch for ${{ matrix.product }}
         run: |
-          VERSION=${{ env.PUBLISH_VERSION }}
           if [[ "${{ matrix.product }}" == "framework" ]]; then
             VERSION=${{ inputs.PUBLISH_FRAMEWORK_VERSION }}
             if [[ -z "$VERSION" ]]; then
@@ -113,10 +114,10 @@ jobs:
             fi
           fi
           cd $GITHUB_WORKSPACE/${{ matrix.product }}
-          echo "Create Branch release_$VERSION"
+          echo "Create Branch $PR_BRANCH for ${{ matrix.product }}"
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git checkout -b "release_$VERSION"
+          git checkout -b "$PR_BRANCH"
           #update release notes
           for f in en zh; do
             sed -i "s/## Latest.*/## $(echo "$VERSION" | sed 's/-.*//') ($(date +'%Y-%m-%d'))/" docs/content.$f/docs/release-notes/_index.md
@@ -137,10 +138,7 @@ jobs:
           done
 
       - name: Create Commit Message for ${{ matrix.product }}
-        env:
-          GH_TOKEN: ${{ secrets.REPO_PAT }} 
         run: |
-          VERSION=${{ env.PUBLISH_VERSION }}
           if [[ "${{ matrix.product }}" == "framework" ]]; then
             VERSION=${{ inputs.PUBLISH_FRAMEWORK_VERSION }}
             if [[ -z "$VERSION" ]]; then
@@ -149,18 +147,13 @@ jobs:
             fi
           fi
           cd $GITHUB_WORKSPACE/${{ matrix.product }}
-          if [[ "${{ inputs.NEXT_PUBLISH }}" == "true" ]]; then
-            git commit -m "chore: update release notes template for next publish"
-          else
-            git commit -m "chore: update release notes for publish $VERSION"
-          fi          
-          git push origin "release_$VERSION"
+          git commit -m "$PR_MESSAGE"     
+          git push origin "$PR_BRANCH"
 
       - name: Create Github Pull Request for ${{ matrix.product }}
         env:
           GH_TOKEN: ${{ secrets.REPO_PAT }} 
         run: |
-          VERSION=${{ env.PUBLISH_VERSION }}
           if [[ "${{ matrix.product }}" == "framework" ]]; then
             VERSION=${{ inputs.PUBLISH_FRAMEWORK_VERSION }}
             if [[ -z "$VERSION" ]]; then
@@ -169,7 +162,7 @@ jobs:
             fi
           fi
           cd $GITHUB_WORKSPACE/${{ matrix.product }}
-          gh pr create --title "chore: update release notes for publish $VERSION" \
+          gh pr create --title "$PR_MESSAGE" \
                   --body "This PR updates the release notes." \
                   --base main \
-                  --head "release_$VERSION"
+                  --head "$PR_BRANCH"
