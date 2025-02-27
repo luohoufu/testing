@@ -97,6 +97,7 @@ jobs:
         run: |
           VERSION=${{ env.PUBLISH_VERSION }}
           cd $GITHUB_WORKSPACE/${{ matrix.product }}
+          git remote set-url origin "https://x-access-token:${{ secrets.REPO_PAT }}@github.com/${{ vars.GIT_REPO }}/${{ matrix.product }}"
           git commit -m "chore: update release notes for publish $VERSION"
           git push origin "release_$VERSION"
 
@@ -106,4 +107,7 @@ jobs:
         run: |
           VERSION=${{ env.PUBLISH_VERSION }}
           cd $GITHUB_WORKSPACE/${{ matrix.product }}
-          gh pr create --title "chore: update release notes for publish $VERSION"
+          gh pr create --title "chore: update release notes for publish $VERSION" \
+                  --body "This PR updates the release notes." \
+                  --base main \
+                  --head "release_$VERSION"
