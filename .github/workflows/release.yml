@@ -97,7 +97,7 @@ jobs:
         run: |
           VERSION=${{ env.PUBLISH_VERSION }}
           cd $GITHUB_WORKSPACE/${{ matrix.product }}
-          git remote set-url origin "https://x-access-token:${{ secrets.REPO_PAT }}@github.com/${{ vars.GIT_REPO }}/${{ matrix.product }}"
+          git remote set-url origin git@github.com:${{ vars.GIT_REPO }}/${{ matrix.product }}.git
           git commit -m "chore: update release notes for publish $VERSION"
           git push origin "release_$VERSION"
 
