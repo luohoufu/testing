@@ -91,6 +91,12 @@ jobs:
       - name: Set up and check env
         run: |
           $GITHUB_WORKSPACE/scripts/env-init.sh
+          echo "VERSION=${{ env.PUBLISH_VERSION }}" >> $GITHUB_ENV
+          if [[ "${{ inputs.NEXT_PUBLISH }}" == "true" ]]; then
+            echo "PR_BRANCH=release_for_next" >> $GITHUB_ENV
+          else
+            echo "PR_BRANCH=release_${{ env.PUBLISH_VERSION }}" >> $GITHUB_ENV
+          fi
 
       - name: Checkout ${{ matrix.product }} code
         run: |
@@ -143,8 +149,11 @@ jobs:
             fi
           fi
           cd $GITHUB_WORKSPACE/${{ matrix.product }}
-          git remote set-url origin git@github.com:${{ vars.GIT_REPO }}/${{ matrix.product }}.git
-          git commit -m "chore: update release notes for publish $VERSION"
+          if [[ "${{ inputs.NEXT_PUBLISH }}" == "true" ]]; then
+            git commit -m "chore: update release notes template for next publish"
+          else
+            git commit -m "chore: update release notes for publish $VERSION"
+          fi          
           git push origin "release_$VERSION"
 
       - name: Create Github Pull Request for ${{ matrix.product }}
