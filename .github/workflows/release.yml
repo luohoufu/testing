@@ -150,6 +150,15 @@ jobs:
               echo "Please input the publish version and easysearch version"
               exit 1
             fi
+            suffix=$(echo "$VERSION" | grep -oP '-\K.+$')
+            if [[ "$VERSION" == *"-"* ]] && [[ "$EZS_VERSION" != *"-"* ]] && [[ -n "$suffix" ]]; then
+              EZS_VERSION="${EZS_VERSION}-$suffix"
+            fi
+            #check if the version is correct
+            if [[ "$VERSION" != *"-"* ]] || [[ "$EZS_VERSION" != *"-"* ]]; then
+              echo "Please input correct format Publish version and Easysearch version, like 1.0.0-1"
+              exit 1
+            fi
             fname=".latest"
             echo "Products publish version: $PUBLISH_VERSION, Easysearch version: $EZS_PUBLISH_VERSION"
             wget -q -nc --show-progress --progress=bar:force:noscroll $RELEASE_URL/$fname -P /tmp
@@ -158,7 +167,12 @@ jobs:
               '.console=$publish_version | .gateway=$publish_version | .agent=$publish_version | .easysearch=$easysearch_version | .loadgen=$publish_version' \
               "/tmp/$fname" > $GITHUB_WORKSPACE/$fname
           fi
-          oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -f $GITHUB_WORKSPACE/$fname
+          if $GITHUB_WORKSPACE/scripts/version_compare "/tmp/$fname" "$GITHUB_WORKSPACE/$fname"; then
+            echo "Files are the same, no need to upload."
+          else
+            echo "Files are different, uploading..."
+            oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -f $GITHUB_WORKSPACE/$fname
+          fi
 
       - name: Checkout ${{ matrix.product }} code
         if: ${{ inputs.OPERATION == 'PR' || inputs.OPERATION == 'TAG'}}
