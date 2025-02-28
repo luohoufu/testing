@@ -144,16 +144,6 @@ jobs:
             git clone ${{ vars.GIT_SSH_REPO }}/${{ matrix.product }} $GITHUB_WORKSPACE/${{ matrix.product }}
           fi
 
-      - name: Check tag and create tag for ${{ matrix.product }}
-        run: |
-          cd $GITHUB_WORKSPACE/${{ matrix.product }}
-          echo "Check tag and create tag for ${{ matrix.product }}"
-          tag_exists=$(git rev-parse --verify "refs/tags/$VERSION" 2>/dev/null && echo true || echo false)
-          if [ "$tag_exists" == "false" ]; then
-            git tag -a $VERSION -m "Release $VERSION"
-            git push origin $VERSION
-          fi
-
       - name: Create Branch for ${{ matrix.product }}
         run: |
           cd $GITHUB_WORKSPACE/${{ matrix.product }}
