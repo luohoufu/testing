@@ -111,12 +111,6 @@ jobs:
               echo "Please input the framework version"
               exit 1
             fi
-          elif [[ "${{ matrix.product }}" == "easysearch" ]]; then
-            VERSION=${{ inputs.PUBLISH_EASYSEARCH_VERSION }}
-            if [[ -z "$VERSION" ]]; then
-              echo "Please input the easysearch version"
-              exit 1
-            fi
           else
             VERSION=${{ env.PUBLISH_VERSION }}
           fi
