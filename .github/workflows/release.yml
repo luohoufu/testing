@@ -143,6 +143,8 @@ jobs:
           cat $GITHUB_ENV
       - name: Release latest version
         if: ${{ inputs.OPERATION == 'RELEASE' }}
+        env:
+          GH_TOKEN: ${{ secrets.REPO_PAT }}
         run: |
           if [[ "${{ inputs.OPERATION }}" == "RELEASE" ]]; then
             VER=${{ env.PUBLISH_VERSION }}
@@ -179,6 +181,9 @@ jobs:
             # check if the cache is reset
             curl -s -H 'x-reset-cache: true' "$RELEASE_URL/$fname"
           fi
+          # set actions variables
+          gh variable set PUBLISH_VERSION --body "$VER"
+          gh variable set EASYSEARCH_PUBLISH_VERSION --body "$EZS_VER"
 
       - name: Checkout ${{ matrix.product }} code
         if: ${{ inputs.OPERATION == 'PR' || inputs.OPERATION == 'TAG'}}
@@ -188,14 +193,6 @@ jobs:
           else
             git clone ${{ vars.GIT_SSH_REPO }}/${{ matrix.product }} $GITHUB_WORKSPACE/${{ matrix.product }}
           fi
-
-      - name: Check tag and create tag for ${{ matrix.product }}
-        if: ${{ inputs.OPERATION == 'TAG'}}
-        run: |
-          cd $GITHUB_WORKSPACE/${{ matrix.product }}
-          echo "Check tag and create tag for ${{ matrix.product }}"
-          git config user.name github-actions
-          git config user.email
 
       - name: Check tag and create tag for ${{ matrix.product }}
         if: ${{ inputs.OPERATION == 'TAG'}}
