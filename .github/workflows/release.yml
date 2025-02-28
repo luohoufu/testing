@@ -11,7 +11,7 @@ env:
 on:
   workflow_dispatch:
     inputs:
-      CREATE_PR_TAG:
+      OPERATION:
         description: 'Create PR/Tag'
         required: true
         type: choice
@@ -29,11 +29,7 @@ on:
       PUBLISH_FRAMEWORK_VERSION:
         description: 'Publish Framework Version'
         required: false
-        default: ""
-      PUBLISH_EZS_VERSION:
-        description: 'Publish Easysearch Version'
-        required: false
-        default: ""
+        default: "" 
       AGENT_PUBLISH:
         description: 'Agent'
         required: false
@@ -109,12 +105,6 @@ jobs:
             VERSION=${{ inputs.PUBLISH_FRAMEWORK_VERSION }}
             if [[ -z "$VERSION" ]]; then
               echo "Please input the framework version"
-              exit 1
-            fi
-          elif [[ "${{ matrix.product }}" == "easysearch" ]]; then
-            VERSION=${{ inputs.PUBLISH_EZS_VERSION }}
-            if [[ -z "$VERSION" ]]; then
-              echo "Please input the easysearch version"
               exit 1
             fi
           else
