@@ -9,19 +9,15 @@ env:
   PUBLISH_VERSION: ${{ inputs.PUBLISH_VERSION || vars.PUBLISH_VERSION }}
   
 on:
+  schedule:
+    - cron: '15 17 * * *'  
   workflow_dispatch:
     inputs:
-      OPERATION:
-        description: 'Create PR/Tag'
-        required: true
-        type: choice
-        options: ['PR', 'Tag']
-        default: "PR"
       NEXT_PUBLISH:
         description: 'Next Template Release Notes'
         required: false
         type: boolean
-        default: false
+        default: false        
       PUBLISH_VERSION:
         description: 'Publish Version'
         required: false
@@ -30,10 +26,6 @@ on:
         description: 'Publish Framework Version'
         required: false
         default: "" 
-      PUBLISH_EZS_VERSION:
-        description: 'Publish Easysearch Version'
-        required: false
-        default: ""
       AGENT_PUBLISH:
         description: 'Agent'
         required: false
@@ -59,11 +51,6 @@ on:
         required: false
         type: boolean
         default: true
-      EASYSEARCH_PUBLISH:
-        description: 'Easysearch'
-        required: false
-        type: boolean
-        default: true
 
 jobs:
   generate-matrix: 
@@ -82,7 +69,6 @@ jobs:
             GATEWAY_PUBLISH: ${{ inputs.GATEWAY_PUBLISH }}
             LOADGEN_PUBLISH: ${{ inputs.LOADGEN_PUBLISH }}
             FRAMEWORK_PUBLISH: ${{ inputs.FRAMEWORk_PUBLISH }}
-            EASYSEARCH_PUBLISH: ${{ inputs.EASYSEARCH_PUBLISH }}
         run: |
           matrix=$($GITHUB_WORKSPACE/scripts/go-matrix.sh)
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
@@ -127,3 +113,43 @@ jobs:
           echo "PR_BRANCH=$PR_BRANCH" >> $GITHUB_ENV
           echo "PR_MESSAGE=$PR_MESSAGE" >> $GITHUB_ENV
           cat $GITHUB_ENV
+
+      - name: Checkout ${{ matrix.product }} code
+        run: |
+          git clone ${{ vars.GIT_SSH_REPO }}/${{ matrix.product }} $GITHUB_WORKSPACE/${{ matrix.product }}
+
+      - name: Create Branch for ${{ matrix.product }}
+        run: |
+          cd $GITHUB_WORKSPACE/${{ matrix.product }}
+          echo "Create Branch $PR_BRANCH for ${{ matrix.product }}"
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git checkout -b "$PR_BRANCH"
+          #update release notes
+          PUBLISH="$(echo "$VERSION" | sed 's/-.*//') ($(date +'%Y-%m-%d'))"
+          for f in en zh; do
+            if [[ "${{ matrix.product }}" == "framework" ]] && [[ "$f" == "zh" ]]; then
+              continue
+            fi
+            sed -i "s/## Latest.*/## $PUBLISH/" docs/content.$f/docs/release-notes/_index.md
+            if [[ "${{ inputs.NEXT_PUBLISH }}" == "true" ]]; then
+              sed -i -e "/^## $PUBLISH/i ## Latest (In development)  \\n### Breaking changes  \\n### Features  \\n### Bug fix  \\n### Improvements  \\n" docs/content.$f/docs/release-notes/_index.md
+            fi
+            git add docs/content.$f/docs/release-notes/_index.md
+          done
+
+      - name: Create Commit Message for ${{ matrix.product }}
+        run: |
+          cd $GITHUB_WORKSPACE/${{ matrix.product }}
+          git commit -m "$PR_MESSAGE"     
+          git push origin "$PR_BRANCH"
+
+      - name: Create Github Pull Request for ${{ matrix.product }}
+        env:
+          GH_TOKEN: ${{ secrets.REPO_PAT }} 
+        run: |
+          cd $GITHUB_WORKSPACE/${{ matrix.product }}
+          gh pr create --title "$PR_MESSAGE" \
+                  --body "This PR updates the release notes." \
+                  --base main \
+                  --head "$PR_BRANCH"
