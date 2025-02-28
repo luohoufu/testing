@@ -9,10 +9,14 @@ env:
   PUBLISH_VERSION: ${{ inputs.PUBLISH_VERSION || vars.PUBLISH_VERSION }}
   
 on:
-  schedule:
-    - cron: '15 17 * * *'  
   workflow_dispatch:
     inputs:
+      OPERATION:
+        description: 'Create PR/Tag'
+        required: true
+        type: choice
+        options: ['PR', 'Tag']
+        default: "PR"        
       NEXT_PUBLISH:
         description: 'Next Template Release Notes'
         required: false
@@ -25,7 +29,11 @@ on:
       PUBLISH_FRAMEWORK_VERSION:
         description: 'Publish Framework Version'
         required: false
-        default: "" 
+        default: ""
+      PUBLISH_EZS_VERSION:
+        description: 'Publish Easysearch Version'
+        required: false
+        default: ""
       AGENT_PUBLISH:
         description: 'Agent'
         required: false
@@ -51,6 +59,11 @@ on:
         required: false
         type: boolean
         default: true
+      EASYSEARCH_PUBLISH:
+        description: 'Easysearch'
+        required: false
+        type: boolean
+        default: true
 
 jobs:
   generate-matrix: 
@@ -69,6 +82,7 @@ jobs:
             GATEWAY_PUBLISH: ${{ inputs.GATEWAY_PUBLISH }}
             LOADGEN_PUBLISH: ${{ inputs.LOADGEN_PUBLISH }}
             FRAMEWORK_PUBLISH: ${{ inputs.FRAMEWORk_PUBLISH }}
+            EASYSEARCH_PUBLISH: ${{ inputs.EASYSEARCH_PUBLISH }}
         run: |
           matrix=$($GITHUB_WORKSPACE/scripts/go-matrix.sh)
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
@@ -95,6 +109,12 @@ jobs:
             VERSION=${{ inputs.PUBLISH_FRAMEWORK_VERSION }}
             if [[ -z "$VERSION" ]]; then
               echo "Please input the framework version"
+              exit 1
+            fi
+          elif [[ "${{ matrix.product }}" == "easysearch" ]]; then
+            VERSION=${{ inputs.PUBLISH_EZS_VERSION }}
+            if [[ -z "$VERSION" ]]; then
+              echo "Please input the easysearch version"
               exit 1
             fi
           else
