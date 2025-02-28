@@ -120,29 +120,23 @@ jobs:
           else
             VERSION=${{ env.PUBLISH_VERSION }}
           fi
-          # create branch and PR
-          if [[ "${{ inputs.OPERATION }}" == "PR" ]]; then
-            if [[ "${{ inputs.NEXT_PUBLISH }}" == "true" ]]; then
-                PR_BRANCH=release_for_next
-                PR_MESSAGE="chore: update release notes template for next publish"
-            else
-                PR_BRANCH="release_$VERSION"
-                PR_MESSAGE="chore: update release notes for publish $VERSION"
-            fi
-
-            echo "PR_BRANCH=$PR_BRANCH" >> $GITHUB_ENV
-            echo "PR_MESSAGE=$PR_MESSAGE" >> $GITHUB_ENV
+          
+          if [[ "${{ inputs.NEXT_PUBLISH }}" == "true" ]]; then
+            PR_BRANCH=release_for_next
+            PR_MESSAGE="chore: update release notes template for next publish"
+          else
+            PR_BRANCH="release_$VERSION"
+            PR_MESSAGE="chore: update release notes for publish $VERSION"
           fi
+
           echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "PR_BRANCH=$PR_BRANCH" >> $GITHUB_ENV
+          echo "PR_MESSAGE=$PR_MESSAGE" >> $GITHUB_ENV
           cat $GITHUB_ENV
 
       - name: Checkout ${{ matrix.product }} code
         run: |
-          if [[ "${{ matrix.product }}" == "easysearch" ]]; then
-            git clone $SSH_GIT_REPO/${{ matrix.product }} $GITHUB_WORKSPACE/${{ matrix.product }}
-          else
-            git clone ${{ vars.GIT_SSH_REPO }}/${{ matrix.product }} $GITHUB_WORKSPACE/${{ matrix.product }}
-          fi
+          git clone ${{ vars.GIT_SSH_REPO }}/${{ matrix.product }} $GITHUB_WORKSPACE/${{ matrix.product }}
 
       - name: Create Branch for ${{ matrix.product }}
         run: |
