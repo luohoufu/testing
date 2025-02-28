@@ -144,26 +144,26 @@ jobs:
         if: ${{ inputs.OPERATION == 'RELEASE' }}
         run: |
           if [[ "${{ inputs.OPERATION }}" == "RELEASE" ]]; then
-            PUBLISH_VERSION=${{ env.PUBLISH_VERSION }}
-            EZS_PUBLISH_VERSION=${{ inputs.PUBLISH_EZS_VERSION }}
-            if [[ -z "$PUBLISH_VERSION" ]] || [[ -z "$EZS_PUBLISH_VERSION" ]]; then
+            VER=${{ env.PUBLISH_VERSION }}
+            EZS_VER=${{ inputs.PUBLISH_EZS_VERSION }}
+            if [[ -z "$VER" ]] || [[ -z "$EZS_VER" ]]; then
               echo "Please input the publish version and easysearch version"
               exit 1
             fi
-            suffix=$(echo "$VERSION" | grep -oP '-\K.+$')
-            if [[ "$VERSION" == *"-"* ]] && [[ "$EZS_VERSION" != *"-"* ]] && [[ -n "$suffix" ]]; then
-              EZS_VERSION="${EZS_VERSION}-$suffix"
+            SUFFIX=$(echo "$VER" | grep -oP '-\K.+$')
+            if [[ "$VER" == *"-"* ]] && [[ "$EZS_VERSION" != *"-"* ]] && [[ -n "$SUFFIX" ]]; then
+              EZS_VERSION="${EZS_VERSION}-$SUFFIX"
             fi
             #check if the version is correct
-            if [[ "$VERSION" != *"-"* ]] || [[ "$EZS_VERSION" != *"-"* ]]; then
+            if [[ "$VER" != *"-"* ]] || [[ "$EZS_VERSION" != *"-"* ]]; then
               echo "Please input correct format Publish version and Easysearch version, like 1.0.0-1"
               exit 1
             fi
             fname=".latest"
-            echo "Products publish version: $PUBLISH_VERSION, Easysearch version: $EZS_PUBLISH_VERSION"
+            echo "Products publish version: $VER, Easysearch version: $EZS_VER"
             wget -q -nc --show-progress --progress=bar:force:noscroll $RELEASE_URL/$fname -P /tmp
-            jq --arg publish_version "$PUBLISH_VERSION" \
-              --arg easysearch_version "$EZS_PUBLISH_VERSION" \
+            jq --arg publish_version "$VER" \
+              --arg easysearch_version "$EZS_VER" \
               '.console=$publish_version | .gateway=$publish_version | .agent=$publish_version | .easysearch=$easysearch_version | .loadgen=$publish_version' \
               "/tmp/$fname" > $GITHUB_WORKSPACE/$fname
           fi
