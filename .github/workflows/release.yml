@@ -30,6 +30,10 @@ on:
         description: 'Publish Framework Version'
         required: false
         default: ""
+      PUBLISH_EASYSEARCH_VERSION:
+        description: 'Publish Easysearch Version'
+        required: false
+        default: ""
       AGENT_PUBLISH:
         description: 'Agent'
         required: false
