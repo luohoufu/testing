@@ -113,7 +113,7 @@ jobs:
               exit 1
             fi
           else
-            VERSION=${{ env.PUBLISH_VERSION }}
+            VERSION=$(echo "${{ env.PUBLISH_VERSION }}" | sed 's/-.*//')
           fi
           
           if [[ "${{ inputs.OPERATION }}" == "PPR" ]]; then
