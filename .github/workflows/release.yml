@@ -11,7 +11,7 @@ env:
 on:
   workflow_dispatch:
     inputs:
-      OPERATION:
+      CREATE_PR_TAG:
         description: 'Create PR/Tag'
         required: true
         type: choice
