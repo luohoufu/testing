@@ -1,4 +1,4 @@
-name: Products Release Notes PR
+name: Products Release Notes and Tag
 defaults:
   run:
     shell: bash
@@ -22,7 +22,7 @@ on:
         description: 'Create PR/TAG'
         required: true
         type: choice
-        options: ['PR', 'TAG', "PPR"]
+        options: ['PR', 'TAG']
         default: "PR"
       PUBLISH_VERSION:
         description: 'Publish Version'
@@ -124,17 +124,14 @@ jobs:
             VERSION=${{ env.PUBLISH_VERSION }}
           fi
           
-          if [[ "${{ inputs.OPERATION }}" == "PPR" ]]; then
-            PR_BRANCH=release_for_next
-            PR_MESSAGE="chore: update release notes template for next publish"
-          else
+          if [[ "${{ inputs.OPERATION }}" == "PR" ]]; then
             PR_BRANCH="release_$VERSION"
             PR_MESSAGE="chore: update release notes for publish $VERSION"
+            echo "PR_BRANCH=$PR_BRANCH" >> $GITHUB_ENV
+            echo "PR_MESSAGE=$PR_MESSAGE" >> $GITHUB_ENV
           fi
 
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "PR_BRANCH=$PR_BRANCH" >> $GITHUB_ENV
-          echo "PR_MESSAGE=$PR_MESSAGE" >> $GITHUB_ENV
           cat $GITHUB_ENV
 
       - name: Checkout ${{ matrix.product }} code
@@ -160,7 +157,7 @@ jobs:
           fi
 
       - name: Create Branch for ${{ matrix.product }}
-        if: ${{ (inputs.OPERATION == 'PR' || inputs.OPERATION == 'PPR') && matrix.product != 'easysearch' }}
+        if: ${{ inputs.OPERATION == 'PR' && matrix.product != 'easysearch' }}
         run: |
           cd $GITHUB_WORKSPACE/${{ matrix.product }}
           echo "Create Branch $PR_BRANCH for ${{ matrix.product }}"
@@ -174,21 +171,19 @@ jobs:
               continue
             fi
             sed -i "s/## Latest.*/## $PUBLISH/" docs/content.$f/docs/release-notes/_index.md
-            if [[ "${{ inputs.OPERATION }}" == "PPR" ]]; then
-              sed -i -e "/^## $PUBLISH/i ## Latest (In development)  \\n### Breaking changes  \\n### Features  \\n### Bug fix  \\n### Improvements  \\n" docs/content.$f/docs/release-notes/_index.md
-            fi
+            sed -i -e "/^## $PUBLISH/i ## Latest (In development)  \\n### Breaking changes  \\n### Features  \\n### Bug fix  \\n### Improvements  \\n" docs/content.$f/docs/release-notes/_index.md
             git add docs/content.$f/docs/release-notes/_index.md
           done
 
       - name: Create Commit Message for ${{ matrix.product }}
-        if: ${{ (inputs.OPERATION == 'PR' || inputs.OPERATION == 'PPR') && matrix.product != 'easysearch' }}
+        if: ${{ inputs.OPERATION == 'PR' && matrix.product != 'easysearch' }}
         run: |
           cd $GITHUB_WORKSPACE/${{ matrix.product }}
           git commit -m "$PR_MESSAGE"     
           git push origin "$PR_BRANCH"
 
       - name: Create Github Pull Request for ${{ matrix.product }}
-        if: ${{ (inputs.OPERATION == 'PR' || inputs.OPERATION == 'PPR') && matrix.product != 'easysearch' }}
+        if: ${{ inputs.OPERATION == 'PR' && matrix.product != 'easysearch' }}
         env:
           GH_TOKEN: ${{ secrets.REPO_PAT }} 
         run: |
