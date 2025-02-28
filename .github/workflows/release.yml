@@ -15,13 +15,8 @@ on:
         description: 'Create PR/Tag'
         required: true
         type: choice
-        options: ['PR', 'Tag']
-        default: "PR"        
-      NEXT_PUBLISH:
-        description: 'Next Template Release Notes'
-        required: false
-        type: boolean
-        default: false        
+        options: ['PR', 'Tag', "PPR"]
+        default: "PR"
       PUBLISH_VERSION:
         description: 'Publish Version'
         required: false
@@ -29,8 +24,8 @@ on:
       PUBLISH_FRAMEWORK_VERSION:
         description: 'Publish Framework Version'
         required: false
-        default: ""
-      PUBLISH_EASYSEARCH_VERSION:
+        default: "" 
+      PUBLISH_EZS_VERSION:
         description: 'Publish Easysearch Version'
         required: false
         default: ""
@@ -111,11 +106,17 @@ jobs:
               echo "Please input the framework version"
               exit 1
             fi
+          elif [[ "${{ matrix.product }}" == "easysearch" ]]; then
+            VERSION=${{ inputs.PUBLISH_EZS_VERSION }}
+            if [[ -z "$VERSION" ]]; then
+              echo "Please input the easysearch version"
+              exit 1
+            fi
           else
             VERSION=${{ env.PUBLISH_VERSION }}
           fi
           
-          if [[ "${{ inputs.NEXT_PUBLISH }}" == "true" ]]; then
+          if [[ "${{ inputs.OPERATION }}" == "PPR" ]]; then
             PR_BRANCH=release_for_next
             PR_MESSAGE="chore: update release notes template for next publish"
           else
@@ -130,9 +131,25 @@ jobs:
 
       - name: Checkout ${{ matrix.product }} code
         run: |
-          git clone ${{ vars.GIT_SSH_REPO }}/${{ matrix.product }} $GITHUB_WORKSPACE/${{ matrix.product }}
+          if [[ "${{ matrix.product }}" == "easysearch" ]]; then
+            git clone $SSH_GIT_REPO/${{ matrix.product }} $GITHUB_WORKSPACE/${{ matrix.product }}
+          else
+            git clone ${{ vars.GIT_SSH_REPO }}/${{ matrix.product }} $GITHUB_WORKSPACE/${{ matrix.product }}
+          fi
+     
+      - name: Check tag and create tag for ${{ matrix.product }}
+        if: ${{ inputs.OPERATION == 'Tag'}}
+        run: |
+          cd $GITHUB_WORKSPACE/${{ matrix.product }}
+          echo "Check tag and create tag for ${{ matrix.product }}"
+          tag_exists=$(git rev-parse --verify "refs/tags/$VERSION" 2>/dev/null && echo true || echo false)
+          if [ "$tag_exists" == "false" ]; then
+            git tag -a $VERSION -m "Release $VERSION"
+            git push origin $VERSION
+          fi
 
       - name: Create Branch for ${{ matrix.product }}
+        if: ${{ inputs.OPERATION == 'PR' && matrix.product != 'easysearch' }}
         run: |
           cd $GITHUB_WORKSPACE/${{ matrix.product }}
           echo "Create Branch $PR_BRANCH for ${{ matrix.product }}"
@@ -146,13 +163,14 @@ jobs:
               continue
             fi
             sed -i "s/## Latest.*/## $PUBLISH/" docs/content.$f/docs/release-notes/_index.md
-            if [[ "${{ inputs.NEXT_PUBLISH }}" == "true" ]]; then
+            if [[ "${{ inputs.OPERATION }}" == "PPR" ]]; then
               sed -i -e "/^## $PUBLISH/i ## Latest (In development)  \\n### Breaking changes  \\n### Features  \\n### Bug fix  \\n### Improvements  \\n" docs/content.$f/docs/release-notes/_index.md
             fi
             git add docs/content.$f/docs/release-notes/_index.md
           done
 
       - name: Create Commit Message for ${{ matrix.product }}
+        if: ${{ inputs.OPERATION == 'PR' && matrix.product != 'easysearch' }}
         run: |
           cd $GITHUB_WORKSPACE/${{ matrix.product }}
           git commit -m "$PR_MESSAGE"     
