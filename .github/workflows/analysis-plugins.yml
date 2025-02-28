@@ -91,8 +91,12 @@ jobs:
             fi
             # Build when not publish
             if [[ "${ver%%.*}" -lt 8 ]]; then
-              git fetch origin "${ver%%.*}.x" && git checkout "${ver%%.*}.x"
+              if [[ "$TNAME" == "elasticsearch" ]]; then
+                git fetch origin "${ver%%.*}.x" && git checkout "${ver%%.*}.x"
+              else
+                git fetch origin "open-${ver%%.*}.x" && git checkout "open-${ver%%.*}.x"
             fi
+            
             echo "Current build for $TNAME version [ $ver ] with branch $(git rev-parse --abbrev-ref HEAD)"
             if [[ "${ver%%.*}" -lt 8 ]] && [[ "$TNAME" == "elasticsearch" ]]; then
               echo mvn package -DskipTests -D$TNAME.version=$ver

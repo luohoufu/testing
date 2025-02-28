@@ -98,6 +98,7 @@ jobs:
       contents: write
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         include: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
     steps:
@@ -155,6 +156,8 @@ jobs:
             git tag -a $PVER -m "Release $PVER"
             git push origin $PVER
           fi
+          #wait for 1 minute to make sure the tag is created
+          sleep 60
 
       - name: Create Branch for ${{ matrix.product }}
         if: ${{ inputs.OPERATION == 'PR' && matrix.product != 'easysearch' }}
