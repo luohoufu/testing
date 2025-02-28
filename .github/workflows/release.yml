@@ -151,11 +151,11 @@ jobs:
               exit 1
             fi
             SUFFIX=${VER#*-}
-            if [[ "$VER" == *"-"* ]] && [[ "$EZS_VERSION" != *"-"* ]] && [[ -n "$SUFFIX" ]]; then
-              EZS_VERSION="${EZS_VERSION}-$SUFFIX"
+            if [[ "$VER" == *"-"* ]] && [[ "$EZS_VER" != *"-"* ]] && [[ -n "$SUFFIX" ]]; then
+              EZS_VER="${EZS_VER}-$SUFFIX"
             fi
             #check if the version is correct
-            if [[ "$VER" != *"-"* ]] || [[ "$EZS_VERSION" != *"-"* ]]; then
+            if [[ "$VER" != *"-"* ]] || [[ "$EZS_VER" != *"-"* ]]; then
               echo "Please input correct format Publish version and Easysearch version, like 1.0.0-1"
               exit 1
             fi
