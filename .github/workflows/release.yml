@@ -12,10 +12,10 @@ on:
   workflow_dispatch:
     inputs:
       OPERATION:
-        description: 'Create PR/Tag'
+        description: 'Create PR/TAG'
         required: true
         type: choice
-        options: ['PR', 'Tag', "PPR"]
+        options: ['PR', 'TAG', "PPR"]
         default: "PR"
       PUBLISH_VERSION:
         description: 'Publish Version'
@@ -138,7 +138,7 @@ jobs:
           fi
      
       - name: Check tag and create tag for ${{ matrix.product }}
-        if: ${{ inputs.OPERATION == 'Tag'}}
+        if: ${{ inputs.OPERATION == 'TAG'}}
         run: |
           cd $GITHUB_WORKSPACE/${{ matrix.product }}
           echo "Check tag and create tag for ${{ matrix.product }}"
@@ -151,7 +151,7 @@ jobs:
           fi
 
       - name: Create Branch for ${{ matrix.product }}
-        if: ${{ inputs.OPERATION == 'PR' && matrix.product != 'easysearch' }}
+        if: ${{ (inputs.OPERATION == 'PR' || inputs.OPERATION == 'PPR') && matrix.product != 'easysearch' }}
         run: |
           cd $GITHUB_WORKSPACE/${{ matrix.product }}
           echo "Create Branch $PR_BRANCH for ${{ matrix.product }}"
@@ -172,13 +172,14 @@ jobs:
           done
 
       - name: Create Commit Message for ${{ matrix.product }}
-        if: ${{ inputs.OPERATION == 'PR' && matrix.product != 'easysearch' }}
+        if: ${{ (inputs.OPERATION == 'PR' || inputs.OPERATION == 'PPR') && matrix.product != 'easysearch' }}
         run: |
           cd $GITHUB_WORKSPACE/${{ matrix.product }}
           git commit -m "$PR_MESSAGE"     
           git push origin "$PR_BRANCH"
 
       - name: Create Github Pull Request for ${{ matrix.product }}
+        if: ${{ (inputs.OPERATION == 'PR' || inputs.OPERATION == 'PPR') && matrix.product != 'easysearch' }}
         env:
           GH_TOKEN: ${{ secrets.REPO_PAT }} 
         run: |
