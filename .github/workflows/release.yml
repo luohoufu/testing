@@ -150,7 +150,7 @@ jobs:
               echo "Please input the publish version and easysearch version"
               exit 1
             fi
-            SUFFIX=$(echo "$VER" | grep -oP '-\K.+$')
+            SUFFIX=${PUBLISH_VERSION#*-}
             if [[ "$VER" == *"-"* ]] && [[ "$EZS_VERSION" != *"-"* ]] && [[ -n "$SUFFIX" ]]; then
               EZS_VERSION="${EZS_VERSION}-$SUFFIX"
             fi
