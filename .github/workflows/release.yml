@@ -3,6 +3,7 @@ defaults:
   run:
     shell: bash
 env:
+  TOKEN: ${{ secrets.X_TOKEN }}
   RELEASE_URL: ${{ vars.RELEASE_URL }}
   SSH_GIT_REPO: ${{ secrets.SSH_GIT_REPO }}
   SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -174,6 +175,8 @@ jobs:
             echo "Files are different, uploading..."
             oss upload -c $GITHUB_WORKSPACE/.oss.yml -o -f $GITHUB_WORKSPACE/$fname
             # Reset cache
+            curl -s -H "X-Token: $TOKEN" "$RELEASE_URL/_flush?versions=$EZS_VER,$VER"
+            # check if the cache is reset
             curl -s -H 'x-reset-cache: true' "$RELEASE_URL/$fname"
           fi
 
