@@ -17,6 +17,9 @@ fi
 if [[ "${FRAMEWORK_PUBLISH}" == "true" ]]; then
   matrix_includes+=('{"product": "framework"}')
 fi
+if [[ "${EASYSEARCH_PUBLISH}" == "true" ]]; then
+  matrix_includes+=('{"product": "easysearch"}')
+fi
 
 # if not triggered by workflow_dispatch, include all products
 if [[ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]]; then
