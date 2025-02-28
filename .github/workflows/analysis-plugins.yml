@@ -15,8 +15,6 @@ env:
     OSS_MODE: ${{ secrets.OSS_MODE }}
 
 on:
-  schedule:
-    - cron: '30 4/16 * * *'
   workflow_dispatch:
     inputs:
       JAVA_VERSION:

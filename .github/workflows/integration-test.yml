@@ -12,7 +12,7 @@ env:
 
 on:
   schedule:
-    - cron: '15 19 * * *'
+    - cron: '00 18 * * *'
   workflow_dispatch:
     inputs:
       RUN_COMPILE_TEST:

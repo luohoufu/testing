@@ -32,8 +32,6 @@ env:
   ZULU_JAVA_VERSION: ${{ vars.ZULU_JAVA_VERSION }}
   
 on:
-  schedule:
-    - cron: '45 16 * * *'  
   workflow_dispatch:
     inputs:
       PUBLISH_VERSION:
