@@ -31,9 +31,7 @@ env:
   AGENT_VERSION: ${{ vars.PUBLISH_VERSION }}
   ZULU_JAVA_VERSION: ${{ vars.ZULU_JAVA_VERSION }}
   
-on:
-  schedule:
-    - cron: '45 16 * * *'  
+on: 
   workflow_dispatch:
     inputs:
       PUBLISH_VERSION:
@@ -84,7 +82,7 @@ jobs:
 
       - name: Checkout ${{ env.PNAME }} repo
         run: |
-          git clone $SSH_GIT_REPO/$PNAME $GITHUB_WORKSPACE/$PNAME
+          git clone --depth 1 $SSH_GIT_REPO/$PNAME $GITHUB_WORKSPACE/$PNAME
           echo "Checkout $PNAME repo done"
           # for build init
           PUBLISH_RELEASE="${{ inputs.PUBLISH_RELEASE || vars.PUBLISH_RELEASE || 'FALSE' }}"
