@@ -32,6 +32,8 @@ env:
   ZULU_JAVA_VERSION: ${{ vars.ZULU_JAVA_VERSION }}
   
 on:
+  schedule:
+    - cron: '45 16 * * *'  
   workflow_dispatch:
     inputs:
       PUBLISH_VERSION:
@@ -40,17 +42,18 @@ on:
         default: ""
       PUBLISH_RELEASE:
         description: 'Publish Release'
-        required: false
-        type: boolean
-        default: true
+        required: true
+        type: choice
+        options:
+          - true
+          - false
+        default: 'false'
 
 jobs:
   publish:
     name: Publish easysearch files and docker
     runs-on: ubuntu-latest
-    container:      
-      image: gitea/runner-images:ubuntu-latest
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.PUBLISH_RELEASE == true }}
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.PUBLISH_RELEASE != '' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
