@@ -131,21 +131,21 @@ jobs:
         run: |
           # download mod
           cd $WORK
-          git clone --depth 1 git@github.com:googleapis/google-cloud-go.git vendor/cloud.google.com/go
-          git clone --depth 1 git@github.com:felixge/httpsnoop.git vendor/github.com/felixge/httpsnoop
-          git clone --depth 1 git@github.com:go-logr/logr.git vendor/github.com/go-logr/logr
-          git clone --depth 1 git@github.com:golang/groupcache.git vendor/github.com/golang/groupcache
-          git clone --depth 1 git@github.com:google/s2a-go.git vendor/github.com/google/s2a-go
-          git clone --depth 1 git@github.com:google/uuid.git vendor/github.com/google/uuid
-          git clone --depth 1 git@github.com:googleapis/enterprise-certificate-proxy.git vendor/github.com/googleapis/enterprise-certificate-proxy
-          git clone --depth 1 git@github.com:googleapis/gax-go.git vendor/github.com/googleapis/gax-go
-          git clone --depth 1 git@github.com:census-instrumentation/opencensus-go.git vendor/go.opencensus.io
-          git clone --depth 1 git@github.com:open-telemetry/opentelemetry-go-contrib.git vendor/go.opentelemetry.io/contrib
-          git clone --depth 1 git@github.com:open-telemetry/opentelemetry-go.git vendor/go.opentelemetry.io/otel
-          git clone --depth 1 git@github.com:googleapis/google-api-go-client.git vendor/google.golang.org/api
-          git clone --depth 1 git@github.com:googleapis/go-genproto.git vendor/google.golang.org/genproto
-          git clone --depth 1 git@github.com:grpc/grpc-go.git vendor/google.golang.org/grpc
-          git clone --depth 1 https://go.googlesource.com/protobuf.git vendor/google.golang.org/protobuf
+          git clone --depth 1 git@github.com:googleapis/google-cloud-go.git $HOME/go/src/cloud.google.com/go
+          git clone --depth 1 git@github.com:felixge/httpsnoop.git $HOME/go/src/github.com/felixge/httpsnoop
+          git clone --depth 1 git@github.com:go-logr/logr.git $HOME/go/src/github.com/go-logr/logr
+          git clone --depth 1 git@github.com:golang/groupcache.git $HOME/go/src/github.com/golang/groupcache
+          git clone --depth 1 git@github.com:google/s2a-go.git $HOME/go/src/github.com/google/s2a-go
+          git clone --depth 1 git@github.com:google/uuid.git $HOME/go/src/github.com/google/uuid
+          git clone --depth 1 git@github.com:googleapis/enterprise-certificate-proxy.git $HOME/go/src/github.com/googleapis/enterprise-certificate-proxy
+          git clone --depth 1 git@github.com:googleapis/gax-go.git $HOME/go/src/github.com/googleapis/gax-go
+          git clone --depth 1 git@github.com:census-instrumentation/opencensus-go.git $HOME/go/src/go.opencensus.io
+          git clone --depth 1 git@github.com:open-telemetry/opentelemetry-go-contrib.git $HOME/go/src/go.opentelemetry.io/contrib
+          git clone --depth 1 git@github.com:open-telemetry/opentelemetry-go.git $HOME/go/src/go.opentelemetry.io/otel
+          git clone --depth 1 git@github.com:googleapis/google-api-go-client.git $HOME/go/src/google.golang.org/api
+          git clone --depth 1 git@github.com:googleapis/go-genproto.git $HOME/go/src/google.golang.org/genproto
+          git clone --depth 1 git@github.com:grpc/grpc-go.git $HOME/go/src/google.golang.org/grpc
+          git clone --depth 1 https://go.googlesource.com/protobuf.git $HOME/go/src/google.golang.org/protobuf
 
       - name: Build coco server
         run: |
