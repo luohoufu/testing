@@ -219,10 +219,9 @@ jobs:
             linux/arm64
           tags: |
             ${{ env.REPO_NAME }}:${{ env.VERSION }}-${{ env.BUILD_NUMBER }}
-          push: false
+          push: true
 
       - name: Archive coco server files
-        if: ${{ false }}
         run: |
           cd $WORK/$PNAME/bin && mkdir -p config
           for tag in $TARGETS; do
@@ -241,7 +240,6 @@ jobs:
           ls -lrt $WORK/$PNAME-$VERSION-*.*
                       
       - name: Upload coco server files
-        if: ${{ false }}
         run: | 
           cd $WORK
           for tag in $TARGETS; do

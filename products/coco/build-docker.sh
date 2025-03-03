@@ -11,20 +11,26 @@ cd $WORK
 
 for t in amd64 arm64; do
   mkdir -p $WORK/{$PNAME-$t,$DNAME-$t}
-  EZS_VER=curl -sSL $RELEASE_URL/.latest |jq ".$DNAME"
+  EZS_VER=$(curl -sSL $RELEASE_URL/.latest |jq ".$DNAME")
   EZS_FILE=$DEST/$DNAME-$EZS_VER-linux-$t.tar.gz
   wget -q -nc --show-progress --progress=bar:force:noscroll $RELEASE_URL/$DNAME/stable/$DNAME-$EZS_VER-linux-$t.tar.gz -O $EZS_FILE
-  if [ -f $EZS_FILE ]; then
-    echo -e "Extract file \nfrom $EZS_FILE \nto $WORK/$DNAME-$t"
-    tar -zxf $EZS_FILE -C $WORK/$DNAME-$t
+  if [ $? -eq 0 ]; then
+    file_size=$(stat -c%s "$EZS_FILE")
+    if [ "$file_size" -gt 0 ]; then
+      echo -e "Extract file \nfrom $EZS_FILE \nto $WORK/$DNAME-$t"
+      tar -zxf $EZS_FILE -C $WORK/$DNAME-$t
+    else
+      echo "Download failed or file is empty!"
+      exit 1
+    fi
   else
     echo "Error: $EZS_FILE not found exit now."
     exit 1
   fi
 
   # Copy coco
-  cp -rf $WORK/bin/$PNAME-linux-$t $WORK/$PNAME-$t
-  cp -rf $WORK/bin/{LICENSE,NOTICE,$PNAME.yml} $WORK/$PNAME-$t
+  cp -rf $$GITHUB_WORKSPACE/$PNAME/bin/$PNAME-linux-$t $WORK/$PNAME-$t
+  cp -rf $$GITHUB_WORKSPACE/$PNAME/bin/{LICENSE,NOTICE,$PNAME.yml} $WORK/$PNAME-$t
 
   # ES_DISTRIBUTION_TYPE need change to docker
   sed -i 's/tar/docker/' $WORK/$DNAME-$t/bin/$DNAME-env
