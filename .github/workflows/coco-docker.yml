@@ -122,6 +122,11 @@ jobs:
           echo EOL=${{ vars.EOL }} >> $GITHUB_ENV
           echo BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S") >> $GITHUB_ENV
 
+      - name: Setup SSH Key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+                    
       - name: Preper coco server dependencies
         run: |
           # download mod
