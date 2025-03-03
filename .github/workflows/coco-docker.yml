@@ -151,6 +151,12 @@ jobs:
           git clone --depth 1 git@github.com:grpc/grpc-go.git $HOME/go/src/google.golang.org/grpc
           git clone --depth 1 git@github.com:go-logr/logr.git $HOME/go/src/github.com/go-logr/logr
           git clone --depth 1 git@github.com:go-logr/stdr.git $HOME/go/src/github.com/go-logr/stdr
+          git clone --depth 1 https://go.googlesource.com/sys.git $HOME/go/src/golang.org/x/sys
+          git clone --depth 1 https://go.googlesource.com/net.git $HOME/go/src/golang.org/x/net
+          git clone --depth 1 https://go.googlesource.com/text.git $HOME/go/src/golang.org/x/text
+          git clone --depth 1 https://go.googlesource.com/image.git $HOME/go/src/golang.org/x/image
+          git clone --depth 1 https://go.googlesource.com/oauth2.git $HOME/go/src/golang.org/x/oauth2
+          git clone --depth 1 https://go.googlesource.com/crypto.git $HOME/go/src/golang.org/x/crypto
           git clone --depth 1 https://go.googlesource.com/protobuf.git $HOME/go/src/google.golang.org/protobuf
 
       - name: Build coco server
