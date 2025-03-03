@@ -17,8 +17,12 @@ on:
         default: "0.1.1"
       BUILD_BRANCH:
         description: 'Build Branch'
+        type: choice
+        options:
+          - main
+          - chat
         required: true
-        default: "main"
+        default: 'chat'
       PUBLISH_RELEASE:
         description: 'Publish Release'
         required: true
@@ -133,7 +137,6 @@ jobs:
           cd $WORK
           git clone --depth 1 git@github.com:googleapis/google-cloud-go.git $HOME/go/src/cloud.google.com/go
           git clone --depth 1 git@github.com:felixge/httpsnoop.git $HOME/go/src/github.com/felixge/httpsnoop
-          git clone --depth 1 git@github.com:go-logr/logr.git $HOME/go/src/github.com/go-logr/logr
           git clone --depth 1 git@github.com:golang/groupcache.git $HOME/go/src/github.com/golang/groupcache
           git clone --depth 1 git@github.com:google/s2a-go.git $HOME/go/src/github.com/google/s2a-go
           git clone --depth 1 git@github.com:google/uuid.git $HOME/go/src/github.com/google/uuid
@@ -142,9 +145,12 @@ jobs:
           git clone --depth 1 git@github.com:census-instrumentation/opencensus-go.git $HOME/go/src/go.opencensus.io
           git clone --depth 1 git@github.com:open-telemetry/opentelemetry-go-contrib.git $HOME/go/src/go.opentelemetry.io/contrib
           git clone --depth 1 git@github.com:open-telemetry/opentelemetry-go.git $HOME/go/src/go.opentelemetry.io/otel
+          git clone --depth 1 git@github.com:open-telemetry/opentelemetry-go-instrumentation.git $HOME/go/src/go.opentelemetry.io/auto
           git clone --depth 1 git@github.com:googleapis/google-api-go-client.git $HOME/go/src/google.golang.org/api
           git clone --depth 1 git@github.com:googleapis/go-genproto.git $HOME/go/src/google.golang.org/genproto
           git clone --depth 1 git@github.com:grpc/grpc-go.git $HOME/go/src/google.golang.org/grpc
+          git clone --depth 1 git@github.com:go-logr/logr.git $HOME/go/src/github.com/go-logr/logr
+          git clone --depth 1 git@github.com:go-logr/stdr.git $HOME/go/src/github.com/go-logr/stdr
           git clone --depth 1 https://go.googlesource.com/protobuf.git $HOME/go/src/google.golang.org/protobuf
 
       - name: Build coco server
