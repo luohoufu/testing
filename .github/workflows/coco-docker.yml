@@ -119,8 +119,10 @@ jobs:
 
       - name: Build coco server
         run: |
+          # download mod
+          cd $WORK/$PNAME && go mod download
           # build web
-          cd $WORK/$PNAME/web && pnpm install && pnpm build
+          cd $WORK/$PNAME/web && pnpm install --quiet --no-progress && pnpm build --quiet
           # build all targets
           for tag in $TARGETS; do
             cd $WORK/$PNAME && make build-$tag
