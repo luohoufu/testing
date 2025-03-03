@@ -124,7 +124,9 @@ jobs:
       - name: Build coco server
         run: |
           # download mod
-          cd $WORK/$PNAME && go mod download
+          cd $WORK/$PNAME 
+          go mod edit -replace=infini.sh/framework=../../infini.sh/framework
+          go mod tidy && go mod download && go mod vendor
           # build web
           cd $WORK/$PNAME/web && pnpm install --quiet && pnpm build
           # build all targets
