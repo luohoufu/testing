@@ -5,7 +5,7 @@ defaults:
 env:
   GO_VERSION: ${{ vars.GO_VERSION }}
   NODEJS_VERSION: 18.20.4
-  PUBLISH_VERSION: ${{ inputs.PUBLISH_VERSION || vars.PUBLISH_VERSION }}
+  PUBLISH_VERSION: ${{ inputs.PUBLISH_VERSION || '0.1.1' }}
   
 on:
   push:
@@ -173,18 +173,21 @@ jobs:
 
       - name: Build coco server check
         run: |
-          ls -lrt $WORK/$PNAME/bin
           for tag in $TARGETS; do
             IFS='-' read -r p1 p2 <<< "$tag"
             TAG="$(echo $p1|sed 's/darwin/mac/;s/win/windows/')-$p2"
             [[ "$p1" == "win" ]] && TAG="$TAG.exe"
             [ -f "$WORK/$PNAME/bin/$PNAME-$TAG" ] || { echo "Build $PNAME failed with not found $PNAME-$TAG" && exit 1; }
           done
-
-      - name: Build coco server License and notice process
-        run: |
           cp -rf $WORK/framework/LICENSE $WORK/$PNAME/bin && cat $WORK/framework/NOTICE $WORK/$PNAME/NOTICE > $WORK/$PNAME/bin/NOTICE
           ls -lrt $WORK/$PNAME/bin
+
+      - name: Preper for Easysearch Docker
+        run: |
+          echo "Build docker for $PNAME start..."
+          #prepare docker build
+          chmod 755 $GITHUB_WORKSPACE/products/$PNAME/build-docker.sh
+          $GITHUB_WORKSPACE/products/$PNAME/build-docker.sh
 
       - name: Set up qemu with coco server
         uses: docker/setup-qemu-action@v3
@@ -208,16 +211,12 @@ jobs:
       - name: Docker build and push with coco server
         uses: docker/build-push-action@v6
         with:
-          context: ${{ github.workspace }}/coco/bin
-          file: ${{ github.workspace }}/products/coco/Dockerfile
+          context: ${{ github.workspace }}/products/${{ env.PNAME }}
+          file: ${{ github.workspace }}/products/${{ env.PNAME }}/Dockerfile
           target: prod
           platforms: |
-            linux/386
-            linux/arm/v6
-            linux/arm/v7
             linux/amd64
-            linux/arm64/v8
-            linux/riscv64
+            linux/arm64
           tags: |
             ${{ env.REPO_NAME }}:${{ env.VERSION }}-${{ env.BUILD_NUMBER }}
           push: false

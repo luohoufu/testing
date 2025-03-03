@@ -23,73 +23,11 @@ start_coco() {
 
   cd "$COCO_DIR"
 
-  if [ -z "${EASYSEARCH_INITIAL_COCO_PASSWORD}" ]; then
-    log "WARNING: EASYSEARCH_INITIAL_COCO_PASSWORD is not set. Using default coco password."
+  # 初始化 keystore
+  if [ -z "$($COCO_DIR/coco keystore list | grep -Eo ES_PASSWORD)" ]; then
+    echo "$EASYSEARCH_INITIAL_ADMIN_PASSWORD" | $COCO_DIR/coco keystore add --stdin ES_PASSWORD
   fi
-
-  # 处理 METRICS_RECEIVER_SERVER 变量
-  IFS=',' read -r -a servers <<< "$METRICS_RECEIVER_SERVER"
-
-  # Initialize servers_yaml and valid_server flag.
-  servers_yaml=""
-  valid_servers=true
-
-  # Iterate over the servers and validate them.
-  IFS=',' read -r -a servers <<< "$METRICS_RECEIVER_SERVER"
-  for server in "${servers[@]}"; do
-    if ! [[ "$server" =~ ^(http|https):// ]]; then
-      log "ERROR: Invalid METRICS_RECEIVER_SERVER '$server'. Must start with http:// or https://."
-      valid_servers=false
-      break
-    fi
-
-    servers_yaml+="- \"$server\""
-    servers_yaml+=$'\n    '  # YAML indent
-  done
-
-  # Abort if any server was invalid
-  if ! $valid_servers; then
-    return 1
-  fi
-
-  # 更新 servers 列表
-  sed -i "/^configs:/, /soft_delete:/ {
-    /^\s*-/d
-    /servers:/a\\
-    $servers_yaml
-  }" $COCO_DIR/coco.yml
-
-  # 多租户模式
-  if [ -n "${TENANT_ID}" ] && [ -n "${CLUSTER_ID}" ]; then
-    # 在多租户模式下，添加 node 配置
-    if ! grep -q "node:" $COCO_DIR/coco.yml; then
-      echo "" >> $COCO_DIR/coco.yml
-      cat <<-EOF >> $COCO_DIR/coco.yml
-  always_register_after_restart: true
-  allow_generated_metrics_tasks: true
-node:
-  major_ip_pattern: ".*"
-  labels:
-    tenant_id: "$TENANT_ID"
-    cluster_id: "$CLUSTER_ID"
-EOF
-    fi
   
-    # 在多租户模式下，初始化 coco keystore 并调整 yml 和 tpl 文件
-    if [ -z "$($COCO_DIR/coco keystore list | grep -Eo user)" ] && [ -n "$EASYSEARCH_INITIAL_COCO_PASSWORD" ] && [ -n "$EASYSEARCH_INITIAL_SYSTEM_ENDPOINT" ]; then
-      echo "infini_coco" | $COCO_DIR/coco keystore add --stdin coco_user
-      echo "$EASYSEARCH_INITIAL_COCO_PASSWORD" | $COCO_DIR/coco keystore add --stdin coco_passwd
-      cp -rf /app/tpl/{*.yml,*.tpl} $COCO_DIR/config
-      SCHEMA=$(echo "$EASYSEARCH_INITIAL_SYSTEM_ENDPOINT" |awk -F"://" '{print $1}')
-      ADDRESS=$(echo "$EASYSEARCH_INITIAL_SYSTEM_ENDPOINT" |awk -F"://" '{print $2}')
-      if [ -n "$SCHEMA" ] && [ -n "$ADDRESS" ]; then
-        INGEST_CONFIG="$COCO_DIR/config/system_ingest_config.yml"
-        sed -i "s/ingest/infini_ingest/;s/passwd/$EASYSEARCH_INITIAL_INGEST_PASSWORD/"  $INGEST_CONFIG
-        sed -i "s/https/$SCHEMA/;s/127.0.0.1:9200/$ADDRESS/" $INGEST_CONFIG
-      fi
-    fi
-  fi
-
   # 权限检查
   if [ "$(stat -c %U $COCO_DIR)" != "ezs" ]; then
     chown -R ezs:ezs $COCO_DIR
@@ -115,6 +53,10 @@ EOF
 trap "exit 0" SIGINT SIGTERM
 
 if [ "$(id -u)" = '0' ]; then
+  if [ -z "${EASYSEARCH_INITIAL_ADMIN_PASSWORD}" ]; then
+    log "WARNING: EASYSEARCH_INITIAL_ADMIN_PASSWORD is not set. Using default coco server password."
+    export EASYSEARCH_INITIAL_ADMIN_PASSWORD="infini_coco"
+  fi
   # init certs/password/plugins
   gosu ezs bash bin/initialize.sh -s
   
