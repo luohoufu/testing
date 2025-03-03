@@ -128,7 +128,7 @@ jobs:
           # build web
           cd $WORK/$PNAME/web && pnpm install --quiet && pnpm build
           # build all targets
-          if [[ "${{ inputs.BUILD_BRANCH }}"" != "main" ]]; then
+          if [[ "${{ inputs.BUILD_BRANCH }}" != "main" ]]; then
             export OFFLINE_BUILD=true
           fi
           for tag in $TARGETS; do
