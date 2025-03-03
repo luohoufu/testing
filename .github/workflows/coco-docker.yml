@@ -1,4 +1,4 @@
-name: Products Files & Docker Publish 
+name: Coco Files & Docker Publish 
 defaults:
   run:
     shell: bash
