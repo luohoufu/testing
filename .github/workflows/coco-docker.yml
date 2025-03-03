@@ -120,7 +120,7 @@ jobs:
       - name: Build coco server
         run: |
           # download mod
-          cd $WORK/$PNAME && go mod download && ls -lrt $GOPATH/pkg/mod
+          cd $WORK/$PNAME && go mod download
           # build web
           cd $WORK/$PNAME/web && pnpm install --quiet && pnpm build
           # build all targets
