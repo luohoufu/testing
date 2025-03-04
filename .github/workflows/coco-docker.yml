@@ -78,12 +78,12 @@ jobs:
           fi
           # download easysearch
           EZS_VER=$(curl -sSL $RELEASE_URL/.latest |jq -r ".${DNAME}")
+          echo "Coco server build with Easysearch $EZS_VER"
           echo EZS_VER=$EZS_VER >> $GITHUB_ENV
           echo WORK=$WORK >> $GITHUB_ENV
           echo WORKBASE=$WORKBASE >> $GITHUB_ENV
           echo PNAME=coco >> $GITHUB_ENV
           echo PATH=$PATH:$GITHUB_WORKSPACE/tools >> $GITHUB_ENV
-          cat $GITHUB_ENV
 
       - name: Setup coco server go toolchain
         uses: actions/setup-go@v5
