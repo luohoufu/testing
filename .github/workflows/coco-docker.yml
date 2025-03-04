@@ -77,7 +77,7 @@ jobs:
             grep -wq "pre" $GITHUB_WORKSPACE/.oss.yml || echo "pre: true" >> $GITHUB_WORKSPACE/.oss.yml
           fi
           # download easysearch
-          EZS_VER=$(curl -sSL $RELEASE_URL/.latest |jq ".${DNAME}")
+          EZS_VER=$(curl -sSL $RELEASE_URL/.latest |jq -r ".${DNAME}")
           echo EZS_VER=$EZS_VER >> $GITHUB_ENV
           echo WORK=$WORK >> $GITHUB_ENV
           echo WORKBASE=$WORKBASE >> $GITHUB_ENV

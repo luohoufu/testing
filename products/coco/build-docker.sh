@@ -10,19 +10,19 @@ cd $WORK
 
 for t in amd64 arm64; do
   mkdir -p $WORK/{$PNAME-$t,$DNAME-$t}
-  EZS_FILE=$DEST/$DNAME-$EZS_VER-linux-$t.tar.gz
-  wget -q -nc --show-progress --progress=bar:force:noscroll $RELEASE_URL/$DNAME/stable/$DNAME-$EZS_VER-linux-$t.tar.gz -O $EZS_FILE
+  EZS_FILE=$DNAME-$EZS_VER-linux-$t.tar.gz
+  wget -q -nc --show-progress --progress=bar:force:noscroll $RELEASE_URL/$DNAME/stable/$EZS_FILE -O $DEST/$EZS_FILE
   if [ $? -eq 0 ]; then
-    file_size=$(stat -c%s "$EZS_FILE")
+    file_size=$(stat -c%s "$DEST/$EZS_FILE")
     if [ "$file_size" -gt 0 ]; then
-      echo -e "Extract file \nfrom $EZS_FILE \nto $WORK/$DNAME-$t"
-      tar -zxf $EZS_FILE -C $WORK/$DNAME-$t
+      echo -e "Extract file \nfrom $DEST/$EZS_FILE \nto $WORK/$DNAME-$t"
+      tar -zxf $DEST/$EZS_FILE -C $WORK/$DNAME-$t
     else
       echo "Download failed or file is empty!"
       exit 1
     fi
   else
-    echo "Error: $EZS_FILE not found exit now."
+    echo "Error: $DEST/$EZS_FILE not found exit now."
     exit 1
   fi
 
