@@ -9,7 +9,6 @@ env:
   PUBLISH_VERSION: ${{ inputs.PUBLISH_VERSION || vars.COCO_PUBLISH_VERSION }}
   
 on:
-  push:
   workflow_dispatch:
     inputs:
       PUBLISH_VERSION:
