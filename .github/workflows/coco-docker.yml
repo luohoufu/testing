@@ -41,6 +41,8 @@ jobs:
         OSS_SK: ${{ secrets.OSS_SK }}
         OSS_BK: ${{ secrets.OSS_BK }}
         OSS_MODE: ${{ secrets.OSS_MODE }}
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SSH_CONFIG: ${{ secrets.SSH_CONFIG }}
         TARGETS: win-amd64 linux-amd64 linux-mips64 linux-mips64le linux-arm64 linux-loong64 linux-riscv64 darwin-amd64 darwin-arm64
     steps:
       - name: Checkout code
@@ -76,12 +78,12 @@ jobs:
           fi
           # download easysearch
           EZS_VER=$(curl -sSL $RELEASE_URL/.latest |jq ".${DNAME}")
-          echo "Downloading $DNAME $EZS_VER for $t ..."
           echo EZS_VER=$EZS_VER >> $GITHUB_ENV
           echo WORK=$WORK >> $GITHUB_ENV
           echo WORKBASE=$WORKBASE >> $GITHUB_ENV
           echo PNAME=coco >> $GITHUB_ENV
           echo PATH=$PATH:$GITHUB_WORKSPACE/tools >> $GITHUB_ENV
+          cat $GITHUB_ENV
 
       - name: Setup coco server go toolchain
         uses: actions/setup-go@v5
@@ -131,12 +133,8 @@ jobs:
           echo BUILD_NUMBER=$DYNAMIC_BUILD_NUMBER >> $GITHUB_ENV
           echo EOL=${{ vars.EOL }} >> $GITHUB_ENV
           echo BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S") >> $GITHUB_ENV
+          cat $GITHUB_ENV
 
-      - name: Setup SSH Key
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-                    
       - name: Preper coco server dependencies
         run: |
           # download mod
