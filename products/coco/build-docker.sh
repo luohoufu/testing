@@ -27,8 +27,8 @@ for t in amd64 arm64; do
   fi
 
   # Copy coco
-  cp -rf $$GITHUB_WORKSPACE/$PNAME/bin/$PNAME-linux-$t $WORK/$PNAME-$t
-  cp -rf $$GITHUB_WORKSPACE/$PNAME/bin/{LICENSE,NOTICE,$PNAME.yml} $WORK/$PNAME-$t
+  cp -rf $GITHUB_WORKSPACE/$PNAME/bin/$PNAME-linux-$t $WORK/$PNAME-$t
+  cp -rf $GITHUB_WORKSPACE/$PNAME/bin/{LICENSE,NOTICE,$PNAME.yml} $WORK/$PNAME-$t
 
   # ES_DISTRIBUTION_TYPE need change to docker
   sed -i 's/tar/docker/' $WORK/$DNAME-$t/bin/$DNAME-env
