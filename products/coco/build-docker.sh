@@ -1,6 +1,5 @@
 #!/bin/bash
 
-DNAME=easysearrch
 DEST=$GITHUB_WORKSPACE/dest
 WORK=$GITHUB_WORKSPACE/products/$PNAME
 
@@ -11,7 +10,6 @@ cd $WORK
 
 for t in amd64 arm64; do
   mkdir -p $WORK/{$PNAME-$t,$DNAME-$t}
-  EZS_VER=$(curl -sSL $RELEASE_URL/.latest |jq ".$DNAME")
   EZS_FILE=$DEST/$DNAME-$EZS_VER-linux-$t.tar.gz
   wget -q -nc --show-progress --progress=bar:force:noscroll $RELEASE_URL/$DNAME/stable/$DNAME-$EZS_VER-linux-$t.tar.gz -O $EZS_FILE
   if [ $? -eq 0 ]; then
