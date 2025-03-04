@@ -29,8 +29,8 @@ start_coco() {
   fi
   
   # 权限检查
-  if [ "$(stat -c %U $COCO_DIR)" != "ezs" ]; then
-    chown -R ezs:ezs $COCO_DIR
+  if [ "$(stat -c %U $WORK_DIR)" != "ezs" ]; then
+    chown -R ezs:ezs $WORK_DIR
   fi
 
   # 初始化 supervisor
