@@ -58,7 +58,7 @@ jobs:
             ["aarch64.deb"]="linux-arm64.deb"
           )
 
-          find . -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.deb" \) | while read -r old_name; do
+          while read -r old_name; do
             base_name=$(basename "$old_name")
             extension="${base_name##*.}"
             matched=false
@@ -70,9 +70,9 @@ jobs:
                 new_base_name="Coco-AI-${VERSION}-${BUILD_NUMBER}-${new_suffix}"
                 new_name_with_ext="${new_base_name}.${extension}"
 
-                mv "$old_name" "$new_name_with_ext"
-                zip "$new_base_name.zip" "$new_name_with_ext"
                 echo "Repackaged: $old_name -> $new_name_with_ext -> $new_base_name.zip"
+                mv "$old_name" "$new_name_with_ext"
+                zip -q "$new_base_name.zip" "$new_name_with_ext"
                 matched=true
                 break
               fi
@@ -81,6 +81,6 @@ jobs:
             if [ "$matched" = false ]; then
                 echo "Warning: No mapping found for $old_name.  Skipping." >&2
             fi
-          done
+          done < <(find . -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.deb" \) | sort) 
           # List repackaged files
           ls -lh *.zip
