@@ -8,24 +8,31 @@ on:
         required: true
         default: 'v0.2.0'
 
+env:
+  GITHUB_API_RELEASES_URL: "https://api.github.com/repos/infinilabs/coco-app/releases"
+  BASE_URL_PREFIX: "https://github.com/infinilabs/coco-app/releases/download"
+  FILE_EXTENSIONS: '\.(dmg|deb|exe)$'
 
 jobs:
   repack:
     runs-on: ubuntu-latest
     steps:
-      - name: Get Release Assets
+      - name: Get Release Asset Names
         id: get_assets
         run: |
-          ASSET_URLS=$(curl -s -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/infinilabs/coco-app/releases/tags/${{ inputs.tag}} | \
-            jq -r '.assets[].browser_download_url')
-          echo "::set-output name=asset_urls::$ASSET_URLS"
+          ASSET_NAMES=$(curl -s -H "Accept: application/vnd.github.v3+json" \
+            "$GITHUB_API_RELEASES_URL/tags/${{ inputs.tag }}" | \ # 使用变量
+            jq -r '.assets[].name')
+          echo "$ASSET_NAMES" > asset_names.txt
 
-      - name: Download Assets
+      - name: Download and Filter Assets
         run: |
-          IFS=$'\n'
-          for url in "${{ steps.get_assets.outputs.asset_urls }}"; do
-            curl -L -O "$url"
+          BASE_URL="$BASE_URL_PREFIX/${{ inputs.tag }}"
+
+          grep -E -i "$FILE_EXTENSIONS" asset_names.txt | while read -r filename; do
+            url="$BASE_URL/$filename"
+            curl -sSL -o "$filename" "$url"
           done
+
           ls -lrt ./
         shell: bash
