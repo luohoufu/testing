@@ -49,10 +49,10 @@ jobs:
           echo "Repack VERSION: $VERSION, BUILD_NUMBER: $BUILD_NUMBER"
 
           declare -A FILE_MAP=(
-            ["setup.exe"]="windows-arm64.exe"
-            ["x64-setup.exe"]="windows-amd64.exe"
-            ["x64.dmg"]="mac-amd64.dmg"
             ["x86-setup.exe"]="windows-386.exe"
+            ["x64-setup.exe"]="windows-amd64.exe"
+            ["setup.exe"]="windows-arm64.exe"
+            ["x64.dmg"]="mac-amd64.dmg"
             ["aarch64.dmg"]="mac-arm64.dmg"
             ["amd64.deb"]="linux-amd64.deb"
             ["aarch64.deb"]="linux-arm64.deb"
@@ -60,15 +60,19 @@ jobs:
 
           find . -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.deb" \) | while read -r old_name; do
             base_name=$(basename "$old_name")
+            extension="${base_name##*.}"
             matched=false
             for pattern in "${!FILE_MAP[@]}"; do
               if [[ "$base_name" == *"$pattern"* ]]; then
-                new_suffix="${FILE_MAP[$pattern]}"
+                new_suffix_with_ext="${FILE_MAP[$pattern]}"
+                new_suffix=$(echo "$new_suffix_with_ext" | sed "s/\.${extension}$//")
+
                 new_base_name="Coco-AI-${VERSION}-${BUILD_NUMBER}-${new_suffix}"
-                new_name_with_ext="${new_base_name}${base_name##*.}"
+                new_name_with_ext="${new_base_name}.${extension}"
+
                 mv "$old_name" "$new_name_with_ext"
                 zip "$new_base_name.zip" "$new_name_with_ext"
-                echo "Repackaged: $old_name -> $new_base_name.zip"
+                echo "Repackaged: $old_name -> $new_name_with_ext -> $new_base_name.zip"
                 matched=true
                 break
               fi
