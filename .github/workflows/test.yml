@@ -4,9 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag'
+        description: 'Release tag (e.g., v0.2.0)'
         required: true
         default: 'v0.2.0'
+      build_number:
+        description: 'Build number (e.g., 1992)'
+        required: true
+        default: '1992'
 
 env:
   GITHUB_API_RELEASES_URL: "https://api.github.com/repos/infinilabs/coco-app/releases"
@@ -30,9 +34,49 @@ jobs:
           BASE_URL="$BASE_URL_PREFIX/${{ inputs.tag }}"
 
           grep -E -i "$FILE_EXTENSIONS" asset_names.txt | while read -r filename; do
-            echo "Downloading $filename from $BASE_URL"
+            echo "Downloading $filename ..."
             url="$BASE_URL/$filename"
             curl -sSL -o "$filename" "$url"
           done
 
-          ls -lrt ./
+      - name: Repackage Assets
+        run: |
+          set -euo pipefail
+
+          VERSION=$(echo "${{ inputs.tag }}" | sed 's/^v//')
+          BUILD_NUMBER="${{ inputs.build_number }}"
+
+          echo "Repack VERSION: $VERSION, BUILD_NUMBER: $BUILD_NUMBER"
+
+          declare -A FILE_MAP=(
+            ["setup.exe"]="windows-arm64.exe"
+            ["x64-setup.exe"]="windows-amd64.exe"
+            ["x64.dmg"]="mac-amd64.dmg"
+            ["x86-setup.exe"]="windows-386.exe"
+            ["aarch64.dmg"]="mac-arm64.dmg"
+            ["amd64.deb"]="linux-amd64.deb"
+            ["aarch64.deb"]="linux-arm64.deb"
+          )
+
+          find . -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.deb" \) | while read -r old_name; do
+            base_name=$(basename "$old_name")
+            matched=false
+            for pattern in "${!FILE_MAP[@]}"; do
+              if [[ "$base_name" == *"$pattern"* ]]; then
+                new_suffix="${FILE_MAP[$pattern]}"
+                new_base_name="Coco-AI-${VERSION}-${BUILD_NUMBER}-${new_suffix}"
+                new_name_with_ext="${new_base_name}${base_name##*.}"
+                mv "$old_name" "$new_name_with_ext"
+                zip "$new_base_name.zip" "$new_name_with_ext"
+                echo "Repackaged: $old_name -> $new_base_name.zip"
+                matched=true
+                break
+              fi
+            done
+
+            if [ "$matched" = false ]; then
+                echo "Warning: No mapping found for $old_name.  Skipping." >&2
+            fi
+          done
+          # List repackaged files
+          ls -lh *.zip
