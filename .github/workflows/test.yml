@@ -21,15 +21,17 @@ jobs:
         id: get_assets
         run: |
           ASSET_NAMES=$(curl -s -H "Accept: application/vnd.github.v3+json" \
-            "$GITHUB_API_RELEASES_URL/tags/${{ inputs.tag }}" | \ # 使用变量
+            "$GITHUB_API_RELEASES_URL/tags/${{ inputs.tag }}" | \
             jq -r '.assets[].name')
           echo "$ASSET_NAMES" > asset_names.txt
+          cat asset_names.txt
 
       - name: Download and Filter Assets
         run: |
           BASE_URL="$BASE_URL_PREFIX/${{ inputs.tag }}"
 
           grep -E -i "$FILE_EXTENSIONS" asset_names.txt | while read -r filename; do
+            echo "Downloading $filename from $BASE_URL"
             url="$BASE_URL/$filename"
             curl -sSL -o "$filename" "$url"
           done
