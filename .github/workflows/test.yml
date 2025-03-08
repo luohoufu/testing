@@ -1,39 +1,31 @@
-name: Test Github Actions
+name: Repackage Release
 
-env:
-  RELEASE_URL: ${{ vars.RELEASE_URL }}
-  JAVA_DISTRIBUTION: ${{ vars.JAVA_DISTRIBUTION}}
-  MAVEN_VERSION: ${{ vars.MAVEN_VERSION }}
-  MAVEN_DOWNLOAD_URL: ${{ vars.MAVEN_DOWNLOAD_URL }}
-  
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag'
+        required: true
+        default: 'v0.2.0'
+
 
 jobs:
-  job1:
-    name: Job1
+  repack:
     runs-on: ubuntu-latest
     steps:
-      - name: Set up and check env
+      - name: Get Release Assets
+        id: get_assets
         run: |
-          echo $GITHUB_WORKSPACE
-          env | sort
-          touch $GITHUB_WORKSPACE/job1.txt
-  job2:
-    name: Job2
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up and check env
-        run: |
-          echo $GITHUB_WORKSPACE
-          env | sort
-          ls -lrt $GITHUB_WORKSPACE
+          ASSET_URLS=$(curl -s -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/infinilabs/coco-app/releases/tags/${{ inputs.tag}} | \
+            jq -r '.assets[].browser_download_url')
+          echo "::set-output name=asset_urls::$ASSET_URLS"
 
-  job3:
-    name: Job3
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up and check env
+      - name: Download Assets
         run: |
-          /usr/bin/nc -h
-          ls -lh /bin/
+          IFS=$'\n'
+          for url in "${{ steps.get_assets.outputs.asset_urls }}"; do
+            curl -L -O "$url"
+          done
+          ls -lrt ./
+        shell: bash
