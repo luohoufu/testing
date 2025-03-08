@@ -18,7 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Get Release Asset Names
-        id: get_assets
         run: |
           ASSET_NAMES=$(curl -s -H "Accept: application/vnd.github.v3+json" \
             "$GITHUB_API_RELEASES_URL/tags/${{ inputs.tag }}" | \
@@ -37,4 +36,3 @@ jobs:
           done
 
           ls -lrt ./
-        shell: bash
