@@ -70,7 +70,6 @@ jobs:
                 new_base_name="Coco-AI-${VERSION}-${BUILD_NUMBER}-${new_suffix}"
                 new_name_with_ext="${new_base_name}.${extension}"
 
-                echo "Repackaged: $old_name -> $new_name_with_ext -> $new_base_name.zip"
                 mv "$old_name" "$new_name_with_ext"
                 zip -q "$new_base_name.zip" "$new_name_with_ext"
                 matched=true
@@ -83,4 +82,5 @@ jobs:
             fi
           done < <(find . -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.deb" \) | sort) 
           # List repackaged files
+          echo "Repackaged files:"
           ls -lh *.zip
