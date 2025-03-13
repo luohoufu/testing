@@ -47,7 +47,7 @@ jobs:
         id: vars
         working-directory: ${{ env.PNAME }}
         run: |
-          if [[ -n "inputs.PUBLISH_TAG"]]; then
+          if [[ -n "${{ inputs.PUBLISH_TAG }}" ]]; then
             REPO_REF_TYPE="tag"
             # 确保 tag 存在于本地
             git fetch --depth=1 origin tag ${{ inputs.PUBLISH_TAG }}
