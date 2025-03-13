@@ -45,37 +45,40 @@ jobs:
         id: vars
         working-directory: ${{ env.PNAME }}
         run: |
-          if [[ -n "${{ inputs.PUBLISH_TAG }}" ]]; then
-            REPO_REF_TYPE="tag"
-            git checkout ${{ inputs.PUBLISH_TAG }}
-          else
-            REPO_REF_TYPE="branch"
-          fi
           PRODUCT_NAME=$(basename $(pwd))
           echo "PRODUCT_NAME=$PRODUCT_NAME" >> $GITHUB_ENV
-          CURRENT_REF=${GITHUB_REF##*/}
+          
           IS_SEMVER=false
           SEMVER_REGEX="^v([0-9]+)\.([0-9]+)\.([0-9]+)$"
 
-          if [[ "${REPO_REF_TYPE}" == "branch" ]]; then
-            if [[ "$CURRENT_REF" == "main" ]]; then
+          if [[ -n "${{ inputs.PUBLISH_TAG }}" ]]; then
+            REF_TYPE="tag"
+            git checkout ${{ inputs.PUBLISH_TAG }}
+            REF_NAME=$(git describe --tags --exact-match HEAD)
+          else
+            REF_TYPE="branch"
+            REF_NAME="main"
+          fi
+          
+          if [[ "${REF_TYPE}" == "branch" ]]; then
+            if [[ "$REF_NAME" == "main" ]]; then
               echo "VERSION=main" >> $GITHUB_ENV
               echo "BRANCH=main" >> $GITHUB_ENV
-            elif [[ "$CURRENT_REF" =~ $SEMVER_REGEX ]]; then
+            elif [[ "$REF_NAME" =~ $SEMVER_REGEX ]]; then
               IS_SEMVER=true
-              echo "VERSION=$CURRENT_REF" >> $GITHUB_ENV
-              echo "BRANCH=$CURRENT_REF" >> $GITHUB_ENV
+              echo "VERSION=$REF_NAME" >> $GITHUB_ENV
+              echo "BRANCH=$REF_NAME" >> $GITHUB_ENV
             else
-              echo "Branch '$CURRENT_REF' is not a valid semantic version. Skipping build."
+              echo "Branch '$REF_NAME' is not a valid semantic version. Skipping build."
               exit 0
             fi
-          elif [[ "${REPO_REF_TYPE}" == "tag" ]]; then
-            if [[ "$CURRENT_REF" =~ $SEMVER_REGEX ]]; then
+          elif [[ "${REF_TYPE}" == "tag" ]]; then
+            if [[ "$REF_NAME" =~ $SEMVER_REGEX ]]; then
               IS_SEMVER=true
-              echo "VERSION=$CURRENT_REF" >> $GITHUB_ENV
+              echo "VERSION=$REF_NAME" >> $GITHUB_ENV
               echo "BRANCH=main" >> $GITHUB_ENV  # Set BRANCH to 'main' for tags
             else
-              echo "Tag '$CURRENT_REF' is not a valid semantic version. Skipping build."
+              echo "Tag '$REF_NAME' is not a valid semantic version. Skipping build."
               exit 0
             fi
           fi
@@ -84,6 +87,7 @@ jobs:
           VERSIONS=$(git for-each-ref refs/remotes/origin refs/tags --format="%(refname:short)" | \
             grep -E "v[0-9]+\.[0-9]+\.[0-9]+$" | awk -F'[v]' '{print "v"$2}' | sort -Vr | uniq | tr '\n' ',' | sed 's/,$//')
           echo "VERSIONS=main,$VERSIONS" >> $GITHUB_ENV
+          cat $GITHUB_ENV
 
       - name: Install Hugo
         run: |
@@ -101,10 +105,10 @@ jobs:
       - name: Build Documentation
         working-directory: ${{ env.PNAME }}
         run: |
-          (cd docs && OUTPUT=$(pwd)/../docs-output make docs-build docs-place-redirect)
+          (cd docs && OUTPUT=$(pwd)/../../docs-output make docs-build docs-place-redirect)
 
       - name: Commit and Push Changes to Docs Repo
-        working-directory: ${{ env.PNAME }}/docs-output
+        working-directory: docs-output
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
@@ -121,7 +125,7 @@ jobs:
         working-directory: ${{ env.PNAME }}
         run: |
           # Only rebuild the main branch docs if the current ref is not "main"
-          if [[ "$CURRENT_REF" != "main" ]]; then
+          if [[ "$REF_NAME" != "main" ]]; then
             echo "Switching to main branch and rebuilding docs for 'latest'"
 
             # Checkout the main branch of the product repo to rebuild docs for "latest"
@@ -131,7 +135,7 @@ jobs:
             git pull origin main
             
             # Build Docs for Main Branch (latest)
-            (cd docs && OUTPUT=$(pwd)/../docs-output VERSION="main" BRANCH="main" make docs-build docs-place-redirect)
+            (cd docs && OUTPUT=$(pwd)/../../docs-output VERSION="main" BRANCH="main" make docs-build docs-place-redirect)
 
             # Commit and Push Latest Docs to Main
             cd docs-output
