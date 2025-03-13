@@ -6,6 +6,7 @@ defaults:
 
 env:
   PNAME: easysearch
+  HUGO_VERSION: 0.79.1
   GRADLE_VERSION: ${{ vars.GRADLE_VERSION }}
   SSH_GIT_REPO: ${{ secrets.SSH_GIT_REPO }}
   SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -89,8 +90,8 @@ jobs:
 
       - name: Install Hugo
         run: |
-          wget https://github.com/gohugoio/hugo/releases/download/v0.79.1/hugo_extended_0.79.1_Linux-64bit.tar.gz
-          tar -xzvf hugo_extended_0.79.1_Linux-64bit.tar.gz
+          wget -q -nc --show-progress --progress=bar:force:noscroll https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_Linux-64bit.tar.gz
+          tar -xzf hugo_extended_${HUGO_VERSION}_Linux-64bit.tar.gz
           sudo mv hugo /usr/local/bin/
 
       - name: Checkout Docs Repo
@@ -106,7 +107,7 @@ jobs:
           (cd docs && OUTPUT=$(pwd)/../docs-output make docs-build docs-place-redirect)
 
       - name: Commit and Push Changes to Docs Repo
-        working-directory: docs-output
+        working-directory: ${{ env.PNAME }}/docs-output
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
