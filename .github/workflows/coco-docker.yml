@@ -99,6 +99,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODEJS_VERSION }}
+          cache: pnpm
+          cache-dependency-path: "**/node_modules"
 
       - name: Check  with coco server nodejs toolchain
         run: |

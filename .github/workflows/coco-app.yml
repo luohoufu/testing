@@ -58,6 +58,7 @@ jobs:
         with:
           node-version: ${{ env.NODEJS_VERSION }}
           cache: pnpm
+          cache-dependency-path: "**/node_modules"
 
       - uses: pnpm/action-setup@v4
         with:
