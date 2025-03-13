@@ -45,7 +45,7 @@ jobs:
 
       - name: Set Variables Based on Ref
         id: vars
-        working-directory: $GITHUB_WORKSPACE/$PNAME
+        working-directory: ${{ env.PNAME }}
         run: |
           if [[ -n "inputs.PUBLISH_TAG"]]; then
             REPO_REF_TYPE="tag"
@@ -103,7 +103,7 @@ jobs:
           token: ${{ secrets.REPO_PAT }}
 
       - name: Build Documentation
-        working-directory: $GITHUB_WORKSPACE/$PNAME
+        working-directory: ${{ env.PNAME }}
         run: |
           (cd docs && OUTPUT=$(pwd)/../docs-output make docs-build docs-place-redirect)
 
@@ -122,6 +122,7 @@ jobs:
           fi
 
       - name: Rebuild Docs for Latest Version (main), if not already on main
+        working-directory: ${{ env.PNAME }}
         run: |
           # Only rebuild the main branch docs if the current ref is not "main"
           if [[ "$CURRENT_REF" != "main" ]]; then
@@ -151,4 +152,3 @@ jobs:
           else
             echo "Current ref is 'main', skipping rebuild for 'latest'."
           fi
-        working-directory: ./  # Working in the product repo
