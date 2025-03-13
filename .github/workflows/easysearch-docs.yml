@@ -26,8 +26,6 @@ jobs:
     steps:
       - name: Checkout Product Repo
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
           
       - name: Set up and check env
         run: |
@@ -40,7 +38,7 @@ jobs:
 
       - name: Checkout ${{ env.PNAME }} repo
         run: |
-          git clone --depth 1 $SSH_GIT_REPO/$PNAME $GITHUB_WORKSPACE/$PNAME
+          git clone $SSH_GIT_REPO/$PNAME $GITHUB_WORKSPACE/$PNAME
           echo "Checkout $PNAME repo done"
 
       - name: Set Variables Based on Ref
@@ -55,7 +53,7 @@ jobs:
           else
             REPO_REF_TYPE="branch"
           fi
-          PRODUCT_NAME=$(basename $(pwd))  # Get the directory name as the product name
+          PRODUCT_NAME=$(basename $(pwd))
           echo "PRODUCT_NAME=$PRODUCT_NAME" >> $GITHUB_ENV
           CURRENT_REF=${GITHUB_REF##*/}
           IS_SEMVER=false
