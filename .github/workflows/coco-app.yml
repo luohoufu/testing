@@ -4,6 +4,7 @@ defaults:
     shell: bash
 env:
   PNAME: coco-app
+  NODEJS_VERSION: 20
   RELEASE_URL: ${{ vars.RELEASE_URL }}
   PUBLISH_VERSION: ${{ inputs.PUBLISH_VERSION || vars.COCO_PUBLISH_VERSION }}
 
@@ -55,7 +56,8 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ vars.NODEJS_EXT_VERSION }}
+          node-version: ${{ env.NODEJS_VERSION }}
+          cache: pnpm
 
       - uses: pnpm/action-setup@v4
         with:
@@ -77,12 +79,6 @@ jobs:
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
-
-      - name: Sync node version and setup cache
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ vars.NODEJS_EXT_VERSION }}
-          cache: pnpm
 
       - name: Install app dependencies and build web
         working-directory: ${{ env.PNAME }}
