@@ -92,7 +92,7 @@ jobs:
 
       - name: Build app
         working-directory: ${{ env.PNAME }}
-        run: pnpm build
+        run: pnpm tauri build --target ${{ matrix.target }}
 
       - name: Check files
         working-directory: ${{ env.PNAME }}
