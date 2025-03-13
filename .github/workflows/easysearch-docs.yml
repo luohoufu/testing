@@ -31,7 +31,6 @@ jobs:
       - name: Set up and check env
         run: |
           $GITHUB_WORKSPACE/scripts/env-init.sh
-          mkdir -p $GITHUB_WORKSPACE/{dest,jdks}
 
       - name: Run connect in background
         run: |
@@ -48,8 +47,6 @@ jobs:
         run: |
           if [[ -n "${{ inputs.PUBLISH_TAG }}" ]]; then
             REPO_REF_TYPE="tag"
-            # 确保 tag 存在于本地
-            git fetch --depth=1 origin tag ${{ inputs.PUBLISH_TAG }}
             git checkout ${{ inputs.PUBLISH_TAG }}
           else
             REPO_REF_TYPE="branch"
