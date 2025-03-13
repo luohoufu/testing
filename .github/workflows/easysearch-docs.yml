@@ -138,7 +138,7 @@ jobs:
             (cd docs && OUTPUT=$(pwd)/../../docs-output VERSION="main" BRANCH="main" make docs-build docs-place-redirect)
 
             # Commit and Push Latest Docs to Main
-            cd docs-output
+            cd $GITHUB_WORKSPACE/docs-output
             git config user.name "GitHub Actions"
             git config user.email "actions@github.com"
             
