@@ -2,6 +2,11 @@ name: Test OSS Upload
 
 on:
   workflow_dispatch:
+    inputs:
+      file-pattern:
+        description: 'File pattern (e.g., *.sh)'
+        required: true
+        default: '*.sh'
 
 env:
   OSS_PATH: /Release/coco/app/snapshot1
@@ -20,7 +25,7 @@ jobs:
           access-key-secret: ${{ secrets.OSS_SK }}
           bucket: ${{ secrets.OSS_BK }}
           secure: false
-          local-folder: ${{ github.workspace}}/scripts
-          file-pattern: '{*.sh}'
+          local-folder: ${{ github.workspace }}/scripts
+          file-pattern: ${{ inputs.file-pattern }}
           remote-dir: ${{ env.OSS_PATH }}    
       
