@@ -1,0 +1,24 @@
+name: Test OSS Upload
+
+on:
+  workflow_dispatch:
+
+env:
+  OSS_PATH: /Release/coco/app/snapshot1
+
+jobs:
+  oss-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Upload assets to OSS
+        uses: infinilabs/oss-upload@v0
+        with:
+          region: oss-cn-shanghai
+          access-key-id: ${{ secrets.OSS_AK }}
+          access-key-secret: ${{ secrets.OSS_SK }}
+          bucket: ${{ secrets.OSS_BK }}
+          secure: false
+          local-folder: scripts
+          file-pattern: '{*.sig,*.AppImage,*.exe,*.gz}'
+          remote-dir: ${{ env.OSS_PATH }}    
+      
