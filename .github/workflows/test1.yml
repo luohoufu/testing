@@ -25,7 +25,9 @@ jobs:
           access-key-secret: ${{ secrets.OSS_SK }}
           bucket: ${{ secrets.OSS_BK }}
           secure: false
-          local-folder: ${{ github.workspace }}/scripts
-          file-pattern: ${{ inputs.file-pattern }}
-          remote-dir: ${{ env.OSS_PATH }}    
+          local-folder: ${{ github.workspace }}/test
+          file-pattern: '{*.dmg,*.rpm,*.deb,*.exe}'
+          repack-version: 0.2.2-NIGHTLY-20250316
+          remote-dir: ${{ env.OSS_PATH }}
+          debug: 'true'
       
