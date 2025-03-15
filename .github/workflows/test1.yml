@@ -19,6 +19,6 @@ jobs:
           bucket: ${{ secrets.OSS_BK }}
           secure: false
           local-folder: scripts
-          file-pattern: '{*.sig,*.AppImage,*.exe,*.gz}'
+          file-pattern: '{*.sh}'
           remote-dir: ${{ env.OSS_PATH }}    
       
