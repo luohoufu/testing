@@ -20,7 +20,7 @@ jobs:
           access-key-secret: ${{ secrets.OSS_SK }}
           bucket: ${{ secrets.OSS_BK }}
           secure: false
-          local-folder: scripts
+          local-folder: ${{ github.workspace}}/scripts
           file-pattern: '{*.sh}'
           remote-dir: ${{ env.OSS_PATH }}    
       
