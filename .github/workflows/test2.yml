@@ -73,7 +73,6 @@ jobs:
         if: ${{ !inputs.PUBLISH_RELEASE }}
         shell: bash
         run: |
-          package_json="package.json"
           current_version=$PUBLISH_VERSION
           if [ -z "$current_version" ]; then
             echo "PUBLISH_VERSION is not set or is empty." >&2
@@ -88,14 +87,8 @@ jobs:
             exit 1
           fi
           echo "Current version: $current_version"
-          echo `date +%Y%m%d%H%M%S`
           date_str=$(TZ='Asia/Shanghai' date +%Y%m%d)
           IFS=. read -r major minor patch <<< "$current_version"
           new_version="$major.$minor.$((patch + 1))-NIGHTLY-${date_str}"
-          if ${{ matrix.platform == 'macos-latest' }}; then
-            sed -i '' "s/\"version\": *\"[^\"]*\"/\"version\": \"$new_version\"/" "$package_json"
-          else
-            sed -i -e "s/\"version\": *\"[^\"]*\"/\"version\": \"$new_version\"/" "$package_json"
-          fi
           echo "Version updated to: $new_version"
           echo "VERSION=$new_version" >> $GITHUB_ENV
