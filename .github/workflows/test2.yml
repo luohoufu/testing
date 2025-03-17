@@ -8,6 +8,7 @@ defaults:
 
 env:
     PNAME: test2
+    TZ: Asia/Shanghai
 
 on:
   workflow_dispatch:
@@ -48,6 +49,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Show current time
+        run: |
+          date
+          date -u
+          TZ='Asia/Shanghai' date
+          TZ='Asia/Shanghai' date -u
+          echo "Current time: $(data +%Y%m%d %H:%M:%S)"
 
       - name: Set Tag with ${{ matrix.platform }}
         shell: bash
