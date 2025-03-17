@@ -56,7 +56,7 @@ jobs:
           date -u
           TZ='Asia/Shanghai' date
           TZ='Asia/Shanghai' date -u
-          echo "Current time: $(data +%Y%m%d %H:%M:%S)"
+          echo "Current time: $(date +%Y%m%d %H:%M:%S)"
 
       - name: Set Tag with ${{ matrix.platform }}
         shell: bash
