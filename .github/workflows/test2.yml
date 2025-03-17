@@ -18,8 +18,9 @@ on:
         default: '0.2.2-NIGHTLY-20250316'
       PUBLISH_RELEASE:
         description: 'Publish release'
+        type: boolean
         required: true
-        default: 'false'
+        default: false
 
 jobs:
   build-app:
