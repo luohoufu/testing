@@ -11,8 +11,6 @@ env:
   PRODUCT_VERSION: ${{ inputs.PRODUCT_VERSION }}
 
 on:
-  schedule:
-    - cron: '00 18 * * *'
   workflow_dispatch:
     inputs:
       RUN_COMPILE_TEST:
@@ -38,7 +36,7 @@ on:
 
 jobs:
     compile-test:
-        if: ${{ github.event_name != 'workflow_dispatch' || inputs.RUN_COMPILE_TEST == 'true' }}
+        if: ${{ inputs.RUN_COMPILE_TEST == 'true' }}
         runs-on: ubuntu-latest
         steps:
             - name: Init env
