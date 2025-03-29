@@ -36,7 +36,7 @@ on:
 
 jobs:
     compile-test:
-        if: ${{ inputs.RUN_COMPILE_TEST == true }}
+        if: ${{ inputs.RUN_COMPILE_TEST }}
         runs-on: ubuntu-latest
         steps:
             - name: Init env
@@ -106,8 +106,6 @@ jobs:
               uses: actions/setup-node@v4
               with:
                 node-version: ${{ env.NODEJS_VERSION }}
-                cache: npm
-                cache-dependency-path: "**/node_modules"
             
             - name: Cache dependencies
               uses: actions/cache@v4
