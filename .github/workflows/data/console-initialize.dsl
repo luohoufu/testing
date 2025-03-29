@@ -8,7 +8,7 @@ GET /_info
 
 GET /setting/application
 # 200
-# {"auth_enabled":true}
+# {"auth_enabled":false}
 
 GET /health
 # 200
