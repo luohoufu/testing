@@ -1,0 +1,25 @@
+name: Test date format
+
+on:
+    workflow_dispatch:
+      inputs:
+        ONLY_ENTERPRISE:
+          description: 'Is this an enterprise version?'
+          required: true
+          default: 'false'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Testing shell
+      run: |
+        echo "Current date: $(date +%Y-%m-%d)"
+        echo "Current date and time: $(date +%Y-%m-%dT%H:%M:%S)"
+        echo "Current date and time with timezone: $(date +%Y-%m-%dT%H:%M:%S%z)"
+        echo "Current date and time with timezone (ISO 8601): $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        EOL_DATE=$(date -u -d "${{ inputs.ONLY_ENTERPRISE == true && '3 years' || '1 year' }}" +"%Y-12-31T10:10:10Z")
+        echo "EOL date: $EOL_DATE"
