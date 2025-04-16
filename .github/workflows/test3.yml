@@ -5,8 +5,9 @@ on:
       inputs:
         ONLY_ENTERPRISE:
           description: 'Is this an enterprise version?'
+          type: boolean
           required: true
-          default: 'false'
+          default: false
 
 jobs:
   test:
